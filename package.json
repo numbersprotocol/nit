@@ -1,0 +1,48 @@
+{
+  "name": "@numbersprotocol/nit",
+  "version": "1.1.0",
+  "description": "git for web3 digital asset",
+  "main": "lib/nit.js",
+  "repository": "https://github.com/numbersprotocol/nit",
+  "author": "Numbers Protocol",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@types/mime-types": "^2.1.1",
+    "axios": "^0.26.0",
+    "command-line-args": "^5.2.1",
+    "command-line-usage": "^6.1.1",
+    "crypto-js": "^4.1.1",
+    "ethers": "^5.5.4",
+    "form-data": "^4.0.0",
+    "launch-editor": "^2.3.0"
+  },
+  "scripts": {
+    "build": "yarn run clean && tsc",
+    "clean": "rm -rf lib/",
+    "dev-global-install": "yarn global add file:$PWD",
+    "dev-global-uninstall": "yarn global remove @numbersprotocol/nit",
+    "dev-install": "yarn add file:$PWD",
+    "dev-uninstall": "yarn remove @numbersprotocol/nit",
+    "nit": "npx ts-node nit.ts",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
+  },
+  "bin": {
+    "nit": "bin/nit.js"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/command-line-args": "^5.2.0",
+    "@types/command-line-usage": "^5.0.2",
+    "@types/crypto-js": "^4.1.1",
+    "@types/mocha": "^9.1.0",
+    "chai": "^4.3.6",
+    "mocha": "^9.2.2",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
+  },
+  "files": [
+    "IntegrityRegister.json",
+    "/example",
+    "/lib"
+  ]
+}

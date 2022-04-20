@@ -1,0 +1,15 @@
+{
+  "assetCid": "bafybeihfzv2zzffznveiezqien5ejztfukjex7nhlki3hjy5zncsoccxdi",
+  "assetSha256": "63560bb47ebfabb7ab4262dbc61e4445eaff184b1ee5a70b55aabe4c333bcef1",
+  "assetCreator": "bafkreihkrnjvjeijjhalozcfpgrgb46673dlt4e3qm5bmvzzb4if423wse",
+  "assetTimestampCreated": 1401649200,
+  "license": {
+    "name": "mit",
+    "document": "https://opensource.org/licenses/MIT"
+  },
+  "nftRecords": {},
+  "integrityCid": "bafkreicq7kqelooegxd6sq4rpwvxbdu36bz6wpgxeivmndxne4t6pxo22q",
+  "integritySha256": "50faa045b9c435c7e943917dab708e9bf073eb3cd7222ac68eed2727e7dddad4",
+  "abstract": "Richard's Middle out compression engine, Weissman score of 5.2",
+  "encodingFormat": "image/jpeg"
+}

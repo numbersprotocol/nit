@@ -1,0 +1,20 @@
+{
+  "assetTreeCid": "bafkreiea2zhpjokxdggtzzusrsfpatyz2gfadlk6obvpbhf24rmtiuqsfy",
+  "assetTreeSha256": "80d64ef4b957198d3ce6928c8af04f19d18a01ad5e706af09cbae4593452122e",
+  "author": "bafkreiabcfdxn7rqlzdbuqsdabhvoe2zc772ocy5c7l5pgzlkwgnc3vmza",
+  "committer": "bafkreiabcfdxn7rqlzdbuqsdabhvoe2zc772ocy5c7l5pgzlkwgnc3vmza",
+  "action": {
+    "networkAppName": "networkActionTest",
+    "blockchain": "4",
+    "tokenAddress": "",
+    "provider": "bafkreidcnhojuyk6epomati36v5llzcji3gncznusghs7kdw7krpi6dmwq",
+    "abstract": "Execute network action test"
+  },
+  "actionResult": {
+      "txHash": "",
+      "resultUri": ""
+  },
+  "provider": "bafkreidcnhojuyk6epomati36v5llzcji3gncznusghs7kdw7krpi6dmwq",
+  "abstract": "Initial commit for asset meimei fried chicken.",
+  "timestampCreated": 1646731629
+}

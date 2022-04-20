@@ -1,0 +1,26 @@
+{
+  "timestampCreated": 1401649200,
+  "proof": {
+    "device.app_build":"180",
+    "device.app_id":"io.numbersprotocol.capturelite",
+    "device.app_name":"Capture",
+    "device.app_version":"0.35.0",
+    "device.battery_level":0.4699999988079071,
+    "device.device_name":"EXODUS 1",
+    "device.disk_free":412057600,
+    "device.disk_total":4225581056,
+    "device.is_charging":true,
+    "device.is_virtual":false,
+    "device.manufacturer":"HTC",
+    "device.mem_used":41826536,
+    "device.operating_system":"android",
+    "device.os_version":"9",
+    "device.platform":"android",
+    "device.uuid":"16eb24e0fa1f8a28",
+    "geolocation.geolocation_latitude":37.781937,
+    "geolocation.geolocation_longitude":-122.406063
+  },
+  "proofSha256": "fee45b675643240694a801312d1e2a4cecf85fd5c9427a1b102a5fcc298d2751",
+  "proofSignature": "",
+  "provider": "bafkreiajfinqk63kbqrsrs7fjwyszqdpdk3jevcs6py66p4i33ooq6rnny"
+}

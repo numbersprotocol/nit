@@ -1,0 +1,20 @@
+{
+  "device.app_build":"180",
+  "device.app_id":"io.numbersprotocol.capturelite",
+  "device.app_name":"Capture",
+  "device.app_version":"0.35.0",
+  "device.battery_level":0.4699999988079071,
+  "device.device_name":"EXODUS 1",
+  "device.disk_free":412057600,
+  "device.disk_total":4225581056,
+  "device.is_charging":true,
+  "device.is_virtual":false,
+  "device.manufacturer":"HTC",
+  "device.mem_used":41826536,
+  "device.operating_system":"android",
+  "device.os_version":"9",
+  "device.platform":"android",
+  "device.uuid":"16eb24e0fa1f8a28",
+  "geolocation.geolocation_latitude":25.0058495,
+  "geolocation.geolocation_longitude":121.4586813
+}
