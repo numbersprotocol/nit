@@ -1,4 +1,4 @@
-{
+const artifact = {
   "_format": "hh-sol-artifact-1",
   "contractName": "IntegrityRegister",
   "sourceName": "contracts/IntegrityRegister.sol",
@@ -181,3 +181,5 @@
   "linkReferences": {},
   "deployedLinkReferences": {}
 }
+
+export const abi = artifact.abi;

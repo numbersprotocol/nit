@@ -7,6 +7,7 @@ import commandLineArgs = require("command-line-args");
 import commandLineUsage = require("command-line-usage");
 import sha256 = require("crypto-js/sha256");
 
+import { abi } from "./contract";
 import * as ipfs from "./ipfs";
 import * as nit from "./nit";
 
@@ -284,7 +285,7 @@ async function parseArgs() {
 
 async function main() {
   const config = await loadConfig();
-  const blockchain = await nit.loadBlockchain(config);
+  const blockchain = await nit.loadBlockchain(config, abi);
   const args = await parseArgs();
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);

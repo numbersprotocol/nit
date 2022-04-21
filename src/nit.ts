@@ -34,8 +34,6 @@ export const nitconfigTemplate = {
       ],
       /* Integrity registration contract address. */
       "contract": "0x2Aa4e29872DE77E1Bc6cF310d647F9cB0f9a073B",
-      /* Integrity registration contract's ABI filepath. */
-      "contractAbi": "/path/to/abifile",
       "explorerBaseUrl": "https://rinkeby.etherscan.io/tx"
     },
     "fuji": {
@@ -45,7 +43,6 @@ export const nitconfigTemplate = {
         "a".repeat(privateKeyLength),
       ],
       "contract": "0xA2De03bee39Fa637440909abC5621063bC5DA926",
-      "contractAbi": "/path/to/abifile",
       "explorerBaseUrl": "https://testnet.snowtrace.io/tx"
     }
   },
@@ -56,9 +53,8 @@ export const nitconfigTemplate = {
   }
 };
 
-export async function loadBlockchain(config) {
+export async function loadBlockchain(config, abi) {
   const networkConfig = config.network[config.defaultNetwork];
-  const abi = JSON.parse(fs.readFileSync(config.network[config.defaultNetwork].contractAbi, "utf-8")).abi
   const provider = new ethers.providers.JsonRpcProvider(networkConfig.url);
 
   const [signerPrivateKey, user] = networkConfig.accounts;
