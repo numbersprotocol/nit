@@ -111,11 +111,6 @@ async function eventLogRangeQuery(assetCid: string, blockchainInfo) {
   console.log(`Commit block numbers (${commits.length}):`);
   if (commits.length > 0) {
     console.log(`${commits.map(this.toString)}`);
-    /*
-    for (const c of commits) {
-      console.log(`\t${c.toString()}`);
-    }
-    */
   } else {
     return;
   }
@@ -181,27 +176,11 @@ async function eventLogIteratingQuery(assetCid: string, blockchainInfo) {
  * Ethereum Signature
  *----------------------------------------------------------------------------*/
 export async function signIntegrityHash(sha256sum: string, signer) {
-  /*
-  let integrityDataHash = await ethers.utils.solidityKeccak256(
-      ["string"],
-      [sha256sum]
-  );
-  let messageHashBinary = ethers.utils.arrayify(integrityDataHash);
-  let signature = await signer.signMessage(messageHashBinary);
-  */
   let signature = await signer.signMessage(sha256sum);
   return signature;
 }
 
 export async function verifyIntegrityHash(sha256sum: string, signature) {
-  /*
-  let integrityDataHash = await ethers.utils.solidityKeccak256(
-      ["string"],
-      [sha256sum]
-  );
-  let messageHashBinary = ethers.utils.arrayify(integrityDataHash);
-  const recoveredAddress = await ethers.utils.verifyMessage(messageHashBinary, signature);
-  */
   const recoveredAddress = await ethers.utils.verifyMessage(sha256sum, signature);
   return recoveredAddress;
 }

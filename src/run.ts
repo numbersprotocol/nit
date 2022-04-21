@@ -9,7 +9,6 @@ import sha256 = require("crypto-js/sha256");
 
 import * as ipfs from "./ipfs";
 import * as nit from "./nit";
-import { sign } from "crypto";
 
 const launch = require("launch-editor");
 
@@ -428,28 +427,3 @@ main()
     console.error(error);
     process.exit(1);
   });
-
-/*
-async function test() {
-  const blockchain = await loadBlockchain();
-  const sha256sum = "666c0946c6b3b66847a2db16872be66658ca3a0236c538addbcc96ac47e94908";
-  // signature: 0x8c2d325fa756a51b845c2ca9033b586cc290b6e56d20d0e0095b507b2e8710c6795ab7323cbd53c9ef2f29d655ab643c76e91a93fe290a6361f5e19ff064ded51c
-  const signature = await signIntegrityHash(sha256sum, blockchain.signer);
-  console.log(`Signer address: ${blockchain.signer.address}`);
-  console.log(`Signature: ${signature}`);
-
-  const verificationResult = await verifyIntegrityHash(sha256sum, signature, blockchain.signer.address);
-  console.log(`Verification Result (expect true): ${verificationResult}`);
-
-  const fakeAddress = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-  const failedVerificationResult = await verifyIntegrityHash(sha256sum, signature, fakeAddress);
-  console.log(`Verification Result (expect false): ${failedVerificationResult}`);
-}
-
-test()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-*/
