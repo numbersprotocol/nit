@@ -9,6 +9,7 @@ import sha256 = require("crypto-js/sha256");
 
 import * as ipfs from "./ipfs";
 import * as nit from "./nit";
+import { sign } from "crypto";
 
 const launch = require("launch-editor");
 
@@ -85,6 +86,7 @@ async function help() {
         "add       Add assetTree",
         "status    Show current temporary commit",
         "commit    Generate and register commit to web3",
+        "verify    Verify integrity signature",
         "log       Show asset's commits",
         "help      Show this usage tips",
       ]
@@ -120,6 +122,7 @@ async function help() {
         "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult}",
         "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult} --dry-run",
         "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult} --mockup",
+        "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult} -s|--signoff",
       ]
     },
     {
@@ -144,6 +147,10 @@ async function help() {
           "typeLabel": "{underline commit-description}"
         },
         {
+          "name": "signoff",
+          "description": "Sign off the integrity hash of the Asset Tree."
+        },
+        {
           "name": "dry-run",
           "description": "Only show the Commit content and will not commit to blockchain. The added Asset Tree will not be cleaned."
         },
@@ -151,6 +158,12 @@ async function help() {
           "name": "mockup",
           "description": "Use Asset CID mockup (59 'a' chars) as Commit's targeting digital asset."
         },
+      ]
+    },
+    {
+      header: 'verify',
+      content: [
+        "$ nit verify -i|--integrity-hash {underline integrityHash} -s|--signature {underline signature}",
       ]
     },
     {
@@ -203,6 +216,7 @@ async function parseArgs() {
     };
   } else if (commandOptions.command === "commit") {
     const paramDefinitions = [
+      { name: "signoff", alias: "s" },
       { name: "message", alias: "m" },
       { name: "action", alias: "a" },
       { name: "action-result", alias: "r" },
@@ -228,6 +242,16 @@ async function parseArgs() {
     return {
       "command": "status",
       "params": {}
+    }
+  } else if (commandOptions.command === "verify") {
+    const paramDefinitions = [
+      { name: "integrity-hash", alias: "i" },
+      { name: "signature", alias: "s" },
+    ];
+    const paramOptions = commandLineArgs(paramDefinitions, { argv });
+    return {
+      "command": "verify",
+      "params": paramOptions
     }
   } else if (commandOptions.command === "log") {
     const paramDefinitions = [
@@ -261,6 +285,7 @@ async function parseArgs() {
 
 async function main() {
   const config = await loadConfig();
+  const blockchain = await nit.loadBlockchain(config);
   const args = await parseArgs();
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
@@ -319,6 +344,13 @@ async function main() {
     const assetCid = await getWorkingAssetCid();
     let commitData = JSON.parse(fs.readFileSync(`${workingDir}/${assetCid}/commit.json`, "utf-8"));
 
+    // Add commit.assetTreeSignature
+    if ("signoff" in args.params) {
+      commitData.assetTreeSignature = await nit.signIntegrityHash(commitData.assetTreeSha256,
+                                                                  blockchain.signer);
+    } else {
+      console.log(`Commit message: not found and will force user to provide soon`);
+    }
     // Add commit.abstract
     if ("message" in args.params) {
       commitData.abstract = args.params["message"];
@@ -342,7 +374,6 @@ async function main() {
     console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
 
     if ("dry-run" in args.params === false) {
-      const blockchain = await nit.loadBlockchain(config);
       if ("mockup" in args.params === false) {
         await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
       } else {
@@ -367,9 +398,13 @@ async function main() {
     } else {
       console.log("No working Asset");
     }
+  } else if (args.command === "verify") {
+    const integrityHash = args.params["integrity-hash"];
+    const signature = args.params.signature;
+    const signerAddress = await nit.verifyIntegrityHash(integrityHash, signature);
+    console.log(`Signer address: ${signerAddress}`);
   } else if (args.command === "log") {
     if ("asset-cid" in args.params) {
-      const blockchain = await nit.loadBlockchain(config);
       await nit.log(args.params["asset-cid"], blockchain);
     } else {
       await help();

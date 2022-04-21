@@ -193,7 +193,7 @@ export async function signIntegrityHash(sha256sum: string, signer) {
   return signature;
 }
 
-export async function verifyIntegrityHash(sha256sum: string, signature, signerAddress) {
+export async function verifyIntegrityHash(sha256sum: string, signature) {
   /*
   let integrityDataHash = await ethers.utils.solidityKeccak256(
       ["string"],
@@ -203,9 +203,5 @@ export async function verifyIntegrityHash(sha256sum: string, signature, signerAd
   const recoveredAddress = await ethers.utils.verifyMessage(messageHashBinary, signature);
   */
   const recoveredAddress = await ethers.utils.verifyMessage(sha256sum, signature);
-  if (recoveredAddress == signerAddress) {
-    return true;
-  } else {
-    return false;
-  }
+  return recoveredAddress;
 }
