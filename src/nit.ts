@@ -160,10 +160,14 @@ async function eventLogIteratingQuery(assetCid: string, blockchainInfo) {
       console.log(`${blockchainInfo.explorerBaseUrl}/${(eventLog.transactionHash)}`);
 
       const commitEvent = commitEventInterface.parseLog(eventLog);
-      //console.log(`${JSON.stringify(commitEvent, null, 2)}`);
+      console.log(`commitEvent: ${JSON.stringify(commitEvent, null, 2)}`);
 
-      const commitData = JSON.parse(commitEvent.args[2]);
-      console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
+      try {
+        const commitData = JSON.parse(commitEvent.args[2]);
+        console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
+      } catch (error) {
+        console.error(`Failed to parse Commit, error: ${error}`);
+      }
     }
   }
 }
