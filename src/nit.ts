@@ -36,6 +36,14 @@ export const nitconfigTemplate = {
       "contract": "0x2Aa4e29872DE77E1Bc6cF310d647F9cB0f9a073B",
       "explorerBaseUrl": "https://rinkeby.etherscan.io/tx"
     },
+    "avalanche": {
+      "url": "https://api.avax.network/ext/bc/C/rpc",
+      "accounts": [
+        "a".repeat(privateKeyLength)
+      ],
+      "contract": "0x1970aFD0831E9233667fb9484910926c2b18BCb4",
+      "explorerBaseUrl": "https://snowtrace.io/tx"
+    },
     "fuji": {
       "url": "https://api.avax-test.network/ext/bc/C/rpc",
       "gasLimit": 200000,
