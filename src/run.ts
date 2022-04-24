@@ -284,19 +284,28 @@ async function parseArgs() {
 }
 
 async function main() {
+  const args = await parseArgs();
+
+  if (args.command === "init") {
+    await writeConfig(nit.nitconfigTemplate);
+    await setWorkingAssetCid("");
+    console.log('You can run "nit config -e" to set configuration now.');
+    return
+  } else if (fs.existsSync(configFilepath) === false) {
+    console.log('Please run "nit init" to create config.');
+    return
+  } else {
+    // config exists
+  }
+
   const config = await loadConfig();
   const blockchain = await nit.loadBlockchain(config, abi);
-  const args = await parseArgs();
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
 
   if (args.command === "ipfsadd") {
     const r = await ipfs.infuraIpfsAdd(args.params.fileapth);
     console.log(`Command ipfsadd result: ${JSON.stringify(r, null, 2)}`);
-  } else if (args.command === "init") {
-    await writeConfig(nit.nitconfigTemplate);
-    await setWorkingAssetCid("");
-    console.log('You can run "nit config -e" to set configuration now.');
   } else if (args.command === "add") {
     const assetTreeFileContent = fs.readFileSync(args.params.filepath, "utf-8");
     const assetTree = JSON.parse(assetTreeFileContent);
