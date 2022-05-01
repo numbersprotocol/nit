@@ -329,6 +329,7 @@ async function main() {
     const commit = {
       "assetTreeCid": assetTreeInfo.assetCid,
       "assetTreeSha256": assetTreeSha256.toString(),
+      "assetTreeSignature": "",
       "author": config.author,
       "committer": config.committer,
       "action": "",
@@ -378,6 +379,8 @@ async function main() {
     } else {
       console.log(`Commit actionResult: not found and will force user to provide soon`);
     }
+    // Update commit.timestampCreated
+    commitData.timestampCreated = Math.floor(Date.now() / 1000);
 
     console.log(`Asset Cid (index): ${assetCid}`);
     console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
