@@ -9,6 +9,7 @@ import sha256 = require("crypto-js/sha256");
 
 import { abi } from "./contract";
 import * as ipfs from "./ipfs";
+import { Licenses } from "./license";
 import * as nit from "./nit";
 
 const launch = require("launch-editor");
@@ -317,8 +318,16 @@ async function main() {
       fs.mkdirSync(commitDir);
     } else {}
 
-    // Copy assetTree file
-    fs.copyFileSync(args.params.filepath, `${commitDir}/assetTree.json`);
+    // Check and set up license
+    if (config.license == "custom") {
+      assetTree.license = JSON.parse(config.licenseContent);
+    } else {
+      assetTree.license = Licenses[config.license];
+    }
+
+    // Create staged assetTree file
+    console.log(`Current assetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
+    fs.writeFileSync(`${commitDir}/assetTree.json`, JSON.stringify(assetTree, null, 2));
 
     // Get assetTreeCid and encodingFormat
     const assetTreeInfo = await ipfs.infuraIpfsAdd(`${commitDir}/assetTree.json`);
