@@ -89,16 +89,8 @@ export async function loadBlockchain(config, abi) {
  * Commands
  *----------------------------------------------------------------------------*/
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
-  console.debug(`Committing...`);
-  console.log([
-    "Contract Information",
-    `Signer wallet address: ${blockchainInfo.signer.address}`,
-    `Contract address: ${blockchainInfo.contract.address}`,
-  ]);
-
   const r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
-  console.log(`Commit Tx: ${r.hash}`);
-  console.log(`Commit Explorer: ${blockchainInfo.explorerBaseUrl}/${r.hash}`);
+  return r;
 }
 
 export async function log(assetCid: string, blockchainInfo) {

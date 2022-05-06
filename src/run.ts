@@ -7,10 +7,10 @@ import commandLineArgs = require("command-line-args");
 import commandLineUsage = require("command-line-usage");
 import sha256 = require("crypto-js/sha256");
 
-import { Actions } from "./action";
-import { abi } from "./contract";
+import * as action from "./action";
+import * as contract from "./contract";
 import * as ipfs from "./ipfs";
-import { Licenses } from "./license";
+import * as license from "./license";
 import * as nit from "./nit";
 
 const launch = require("launch-editor");
@@ -301,7 +301,7 @@ async function main() {
   }
 
   const config = await loadConfig();
-  const blockchain = await nit.loadBlockchain(config, abi);
+  const blockchain = await nit.loadBlockchain(config, contract.abi);
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
 
@@ -323,7 +323,7 @@ async function main() {
     if (config.license == "custom") {
       assetTree.license = JSON.parse(config.licenseContent);
     } else {
-      assetTree.license = Licenses[config.license];
+      assetTree.license = license.Licenses[config.license];
     }
 
     // Create staged assetTree file
@@ -342,7 +342,7 @@ async function main() {
       "assetTreeSignature": "",
       "author": config.author,
       "committer": config.committer,
-      "action": Actions["action-initial-registration"],
+      "action": action.Actions["action-initial-registration"],
       "actionResult": `https://${assetTreeInfo.assetCid}.ipfs.dweb.link`,
       "provider": config.provider,
       "abstract": "Initial registration.",
@@ -396,12 +396,24 @@ async function main() {
     console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
 
     if ("dry-run" in args.params === false) {
+      console.debug(`Committing...`);
+      console.log([
+        "Contract Information",
+        `Signer wallet address: ${blockchain.signer.address}`,
+        `Contract address: ${blockchain.contract.address}`,
+      ]);
+
+      let commitResult;
       if ("mockup" in args.params === false) {
-        await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
+        commitResult = await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
       } else {
         const assetCidMock = "a".repeat(nit.cidv1Length);
-        await nit.commit(assetCidMock, JSON.stringify(commitData), blockchain);
+        commitResult = await nit.commit(assetCidMock, JSON.stringify(commitData), blockchain);
       }
+
+      console.log(`Commit Tx: ${commitResult.hash}`);
+      console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
+
       // Reset workingAssetCid because commit has been completed.
       await setWorkingAssetCid("");
     } else {
