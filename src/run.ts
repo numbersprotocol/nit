@@ -7,6 +7,7 @@ import commandLineArgs = require("command-line-args");
 import commandLineUsage = require("command-line-usage");
 import sha256 = require("crypto-js/sha256");
 
+import { Actions } from "./action";
 import { abi } from "./contract";
 import * as ipfs from "./ipfs";
 import { Licenses } from "./license";
@@ -341,10 +342,10 @@ async function main() {
       "assetTreeSignature": "",
       "author": config.author,
       "committer": config.committer,
-      "action": "",
-      "actionResult": "",
+      "action": Actions["action-initial-registration"],
+      "actionResult": `https://${assetTreeInfo.assetCid}.ipfs.dweb.link`,
       "provider": config.provider,
-      "abstract": "",
+      "abstract": "Initial registration.",
       "timestampCreated": Math.floor(Date.now() / 1000),
     }
     console.log(`Create temporary commit: ${JSON.stringify(commit, null, 2)}\n`);
@@ -380,13 +381,13 @@ async function main() {
     if ("action" in args.params) {
       commitData.action = JSON.parse(args.params["action"]);
     } else {
-      console.log(`Commit action: not found and will force user to provide soon`);
+      console.log(`Commit action: initial registration (default action)`);
     }
     // Add commit.actionResult
     if ("action-result" in args.params) {
       commitData.actionResult = JSON.parse(args.params["action-result"]);
     } else {
-      console.log(`Commit actionResult: not found and will force user to provide soon`);
+      console.log(`Commit actionResult: initial registration result (default action result)`);
     }
     // Update commit.timestampCreated
     commitData.timestampCreated = Math.floor(Date.now() / 1000);
