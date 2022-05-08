@@ -12,8 +12,14 @@ export async function initInfura(projectId, projectSecret) {
 }
 
 export async function infuraIpfsAdd(filePath: string) {
-  const fileReadStream = fs.createReadStream(filePath);  // returns: fs.ReadStream
+  const contentBytes = fs.readFileSync(filePath);
   const encodingFormat = mime.lookup(filePath);
+  return await infuraIpfsAddBytes(contentBytes, encodingFormat);
+}
+
+export async function infuraIpfsAddBytes(bytes, mimeType) {
+  const { Readable } = require("stream");
+  const fileReadStream = Readable.from(bytes);
 
   const formData = new FormData();
   formData.append('file', fileReadStream);
@@ -31,6 +37,6 @@ export async function infuraIpfsAdd(filePath: string) {
 
   return {
     "assetCid": assetCid,
-    "encodingFormat": encodingFormat
+    "encodingFormat": mimeType
   }
 }
