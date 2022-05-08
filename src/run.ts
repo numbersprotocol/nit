@@ -339,7 +339,8 @@ async function main() {
     const commit = {
       "assetTreeCid": assetTreeInfo.assetCid,
       "assetTreeSha256": assetTreeSha256.toString(),
-      "assetTreeSignature": "",
+      "assetTreeSignature": await nit.signIntegrityHash(
+                              assetTreeSha256.toString(), blockchain.signer),
       "author": config.author,
       "committer": config.committer,
       "action": action.Actions["action-initial-registration"],
