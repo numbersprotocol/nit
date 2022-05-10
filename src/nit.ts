@@ -13,6 +13,7 @@ import * as license from "./license";
 const privateKeyLength = 64;
 const infuraSecretLength = 27;
 export const cidv1Length = 59;
+export const assetCidMock = "a".repeat(cidv1Length);
 export const nitconfigTemplate = {
   /* Author's Identity CID. */
   "author": "a".repeat(cidv1Length),

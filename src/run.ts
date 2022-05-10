@@ -8,8 +8,6 @@ import commandLineUsage = require("command-line-usage");
 import mime = require("mime-types");
 import sha256 = require("crypto-js/sha256");
 
-import { ethers } from "ethers";
-
 import * as action from "./action";
 import * as contract from "./contract";
 import * as ipfs from "./ipfs";
@@ -53,6 +51,29 @@ async function writeConfig(configData: Object) {
   } else {
     console.warn(`Nit config ${nitconfig} exists.`);
   }
+}
+
+/*----------------------------------------------------------------------------
+ * I/O
+ *----------------------------------------------------------------------------*/
+async function stage(assetCid, stagedAssetTree, stagedCommit) {
+  // Create staged dir whose name is assetCid
+  const commitDir = `${workingDir}/${assetCid}`;
+  if (fs.existsSync(commitDir) === false) {
+    fs.mkdirSync(commitDir);
+  } else {}
+
+  fs.writeFileSync(`${commitDir}/assetTree.json`, JSON.stringify(stagedAssetTree, null, 2));
+  fs.writeFileSync(`${commitDir}/commit.json`, JSON.stringify(stagedCommit, null, 2));
+  await setWorkingAssetCid(assetCid);
+}
+
+async function getStagedCommit(assetCid) {
+  return JSON.parse(fs.readFileSync(`${workingDir}/${assetCid}/commit.json`, "utf-8"));
+}
+
+async function getStagedAssetTree(assetCid) {
+  return JSON.parse(fs.readFileSync(`${workingDir}/${assetCid}/assetTree.json`, "utf-8"));
 }
 
 /*----------------------------------------------------------------------------
@@ -127,7 +148,6 @@ async function help() {
         "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult}",
         "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult} --dry-run",
         "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult} --mockup",
-        "$ nit commit -m|--message {underline abstract} -a|--action {underline action} -r|--action-result {underline actionResult} -s|--signoff",
       ]
     },
     {
@@ -150,10 +170,6 @@ async function help() {
           "description": '(Under-development) The execution result of the action. The message will be in the "actionResult" field in a Commit. You can put arbitrary value currently.',
           "alias": "r",
           "typeLabel": "{underline commit-description}"
-        },
-        {
-          "name": "signoff",
-          "description": "Sign off the integrity hash of the Asset Tree."
         },
         {
           "name": "dry-run",
@@ -233,7 +249,6 @@ async function parseArgs() {
     };
   } else if (commandOptions.command === "commit") {
     const paramDefinitions = [
-      { name: "signoff", alias: "s" },
       { name: "message", alias: "m" },
       { name: "action", alias: "a" },
       { name: "action-result", alias: "r" },
@@ -242,17 +257,7 @@ async function parseArgs() {
     ];
     const paramOptions = commandLineArgs(paramDefinitions, { argv });
     return {
-      "command": "commit",
-      "params": paramOptions
-    }
-  } else if (commandOptions.command === "mcommit") {
-    const paramDefinitions = [
-      { name: "asset-cid" },
-      { name: "commit-filepath" },
-    ];
-    const paramOptions = commandLineArgs(paramDefinitions, { argv });
-    return {
-      "command": "mcommit",
+      "command": commandOptions.command,
       "params": paramOptions
     }
   } else if (commandOptions.command === "status") {
@@ -387,31 +392,26 @@ async function main() {
     } else {
       assetTree.license = license.Licenses[config.license];
     }
-
     console.log(`Current AssetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
 
     // Create staged Commit
     const commit = await nit.createCommitInitialRegister(blockchain.signer, config.author, config.committer, config.provider);
-
     console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
+
+    // Stage
+    await stage(assetTree.assetCid, assetTree, commit);
   } else if (args.command === "commit") {
+    const assetCid = await getWorkingAssetCid();
+
     if (await getWorkingAssetCid() === "") {
-      console.log("Need to add an assetTree before commit");
+      console.log("Need to add an Asset before commit");
       return;
     } else {
       // there is a working asset
     }
 
-    const assetCid = await getWorkingAssetCid();
-    let commitData = JSON.parse(fs.readFileSync(`${workingDir}/${assetCid}/commit.json`, "utf-8"));
+    let commitData = await getStagedCommit(assetCid);
 
-    // Add commit.assetTreeSignature
-    if ("signoff" in args.params) {
-      commitData.assetTreeSignature = await nit.signIntegrityHash(commitData.assetTreeSha256,
-                                                                  blockchain.signer);
-    } else {
-      console.log(`Commit message: not found and will force user to provide soon`);
-    }
     // Add commit.abstract
     if ("message" in args.params) {
       commitData.abstract = args.params["message"];
@@ -448,28 +448,25 @@ async function main() {
       if ("mockup" in args.params === false) {
         commitResult = await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
       } else {
-        const assetCidMock = "a".repeat(nit.cidv1Length);
-        commitResult = await nit.commit(assetCidMock, JSON.stringify(commitData), blockchain);
+        commitResult = await nit.commit(nit.assetCidMock, JSON.stringify(commitData), blockchain);
       }
 
       console.log(`Commit Tx: ${commitResult.hash}`);
       console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
 
-      // Reset workingAssetCid because commit has been completed.
+      // Reset stage
       await setWorkingAssetCid("");
     } else {
       console.log("This is dry run and Nit does not register this commit to blockchain.");
     }
-  } else if (args.command === "mcommit") {
-    // TODO: add + commit
   } else if (args.command === "status") {
     const workingAssetCid = await getWorkingAssetCid();
     if (workingAssetCid !== "") {
-      const commitData = JSON.parse(fs.readFileSync(`${workingDir}/${workingAssetCid}/commit.json`, "utf-8"));
-      const assetTree = JSON.parse(fs.readFileSync(`${workingDir}/${workingAssetCid}/assetTree.json`, "utf-8"));
+      const commitData = await getStagedCommit(workingAssetCid);
+      const assetTree = await getStagedAssetTree(workingAssetCid);
       console.log(`[ Working Asset CID ]\n${workingAssetCid}\n`);
-      console.log(`[ Staging Commit ]\n${JSON.stringify(commitData, null, 2)}\n`);
-      console.log(`[ Asset Tree ]\n${JSON.stringify(assetTree, null, 2)}\n`);
+      console.log(`[ Staged Commit ]\n${JSON.stringify(commitData, null, 2)}\n`);
+      console.log(`[ Staged AssetTree ]\n${JSON.stringify(assetTree, null, 2)}\n`);
     } else {
       console.log("No working Asset");
     }
