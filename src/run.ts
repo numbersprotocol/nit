@@ -133,7 +133,13 @@ async function help() {
     {
       header: 'add',
       content: [
-        "$ nit add {underline assetTreeFilepath}",
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract} --nft-record-cid {underline cid} --integrity-cid {underline cid}",
+      ]
+    },
+    {
+      header: 'addv1',
+      content: [
+        "$ nit addv1 {underline assetTreeFilepath}",
       ]
     },
     {
@@ -223,37 +229,38 @@ async function parseArgs() {
       "command": "init",
       "params": {}
     }
-  } else if (commandOptions.command === "add") {
+  } else if (commandOptions.command === "addv1") {
     const paramDefinitions = [
       { name: "filepath", defaultOption: true },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
                                          { argv, stopAtFirstUnknown: true });
     return {
-      "command": "add",
+      "command": "addv1",
       "params": {
         "filepath": paramOptions.filepath,
       }
     };
-  } else if (commandOptions.command === "addv2") {
+  } else if (commandOptions.command === "add") {
     const paramDefinitions = [
       { name: "filepath", defaultOption: true },
+      { name: "message", alias: "m" },
+      { name: "nft-record-cid"},
+      { name: "integrity-cid"},
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
                                          { argv, stopAtFirstUnknown: true });
     return {
-      "command": "addv2",
-      "params": {
-        "filepath": paramOptions.filepath,
-      }
+      "command": commandOptions.command,
+      "params": paramOptions
     };
   } else if (commandOptions.command === "commit") {
     const paramDefinitions = [
       { name: "message", alias: "m" },
       { name: "action", alias: "a" },
       { name: "action-result", alias: "r" },
-      { name: "dry-run"},
-      { name: "mockup"},
+      { name: "dry-run" },
+      { name: "mockup" },
     ];
     const paramOptions = commandLineArgs(paramDefinitions, { argv });
     return {
@@ -328,7 +335,7 @@ async function main() {
   if (args.command === "ipfsadd") {
     const r = await ipfs.infuraIpfsAdd(args.params.fileapth);
     console.log(`Command ipfsadd result: ${JSON.stringify(r, null, 2)}`);
-  } else if (args.command === "add") {
+  } else if (args.command === "addv1") {
     const assetTreeFileContent = fs.readFileSync(args.params.filepath, "utf-8");
     const assetTree = JSON.parse(assetTreeFileContent);
     console.log(`Add assetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
@@ -374,7 +381,7 @@ async function main() {
 
     // Update current target assetCid
     await setWorkingAssetCid(assetTree.assetCid);
-  } else if (args.command === "addv2") {
+  } else if (args.command === "add") {
     // Create staged AssetTree
     const assetBytes = fs.readFileSync(args.params.filepath);
     const assetMimetype = mime.lookup(args.params.filepath);
@@ -391,6 +398,16 @@ async function main() {
       assetTree.license = JSON.parse(config.licenseContent);
     } else {
       assetTree.license = license.Licenses[config.license];
+    }
+
+    if ("message" in args.params) {
+      assetTree.abstract = args.params["message"];
+    }
+    if ("nft-record-cid" in args.params) {
+      assetTree.nftRecord = args.params["nft-record-cid"];
+    }
+    if ("integrity-cid" in args.params) {
+      assetTree.integrityCid= args.params["integrity-cid"];
     }
     console.log(`Current AssetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
 
@@ -412,24 +429,16 @@ async function main() {
 
     let commitData = await getStagedCommit(assetCid);
 
-    // Add commit.abstract
     if ("message" in args.params) {
       commitData.abstract = args.params["message"];
-    } else {
-      console.log(`Commit message: not found and will force user to provide soon`);
     }
-    // Add commit.action
     if ("action" in args.params) {
-      commitData.action = JSON.parse(args.params["action"]);
-    } else {
-      console.log(`Commit action: initial registration (default action)`);
+      commitData.action = action.Actions[args.params["action"]];
     }
-    // Add commit.actionResult
     if ("action-result" in args.params) {
-      commitData.actionResult = JSON.parse(args.params["action-result"]);
-    } else {
-      console.log(`Commit actionResult: initial registration result (default action result)`);
+      commitData.actionResult = args.params["action-result"];
     }
+
     // Update commit.timestampCreated
     commitData.timestampCreated = Math.floor(Date.now() / 1000);
 

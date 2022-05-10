@@ -110,6 +110,23 @@ async function createAssetTreeBase(assetByes, assetMimetype) {
   return stagingAssetTree;
 }
 
+async function createCommitBase(signer, authorCid, committerCid, providerCid) {
+  stagingCommit = {};
+
+  const assetTreeBytes = Buffer.from(JSON.stringify(stagingAssetTree, null, 2));
+  const assetTreeMimetype = "application/json";
+
+  stagingCommit.assetTreeCid = (await ipfs.infuraIpfsAddBytes(assetTreeBytes, assetTreeMimetype)).assetCid;
+  stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(stagingAssetTree, null, 2)))).substring(2);
+  stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
+  stagingCommit.author = authorCid;
+  stagingCommit.committer = committerCid;
+  stagingCommit.provider = providerCid;
+  stagingCommit.timestampCreated = Math.floor(Date.now() / 1000);
+
+  return stagingCommit;
+}
+
 export async function createAssetTreeInitialRegister(assetBytes,
                                                      assetMimetype,
                                                      assetTimestampCreated,
@@ -125,25 +142,24 @@ export async function createAssetTreeInitialRegister(assetBytes,
 }
 
 export async function createCommitInitialRegister(signer, authorCid, committerCid, providerCid) {
-  stagingCommit = {};
-
-  const assetTreeBytes = Buffer.from(JSON.stringify(stagingAssetTree, null, 2));
-  const assetTreeMimetype = "application/json";
-
-  stagingCommit.assetTreeCid = (await ipfs.infuraIpfsAddBytes(assetTreeBytes, assetTreeMimetype)).assetCid;
-  // FIXME: Remove leading 0x in sha256 checksum
-  stagingCommit.assetTreeSha256 = await ethers.utils.sha256(Buffer.from(JSON.stringify(stagingAssetTree, null, 2)));
-  stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
-  stagingCommit.author = authorCid;
-  stagingCommit.committer = committerCid;
+  stagingCommit = await createCommitBase(signer, authorCid, committerCid, providerCid);
   stagingCommit.action = action.Actions["action-initial-registration"];
   stagingCommit.actionResult = `https://${stagingCommit.assetTreeCid}.ipfs.dweb.link`;
-  stagingCommit.provider = providerCid;
-  stagingCommit.abstract = "Initial registration.";
+  stagingCommit.abstract = "Action action-initial-registration.";
   stagingCommit.timestampCreated = Math.floor(Date.now() / 1000);
-
   return stagingCommit;
 }
+
+/*
+export async function createCommitMintErc721Nft(signer, authorCid, committerCid, providerCid, actionIndex, actionResult) {
+  stagingCommit = await createCommitBase(signer, authorCid, committerCid, providerCid);
+  stagingCommit.action = action.Actions[actionIndex];
+  stagingCommit.actionResult = actionResult;
+  stagingCommit.abstract = "Mint ERC-721 NFT.";
+  stagingCommit.timestampCreated = Math.floor(Date.now() / 1000);
+  return stagingCommit;
+}
+*/
 
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
   const r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
