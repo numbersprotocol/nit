@@ -5,7 +5,10 @@ import os = require("os");
 
 import commandLineArgs = require("command-line-args");
 import commandLineUsage = require("command-line-usage");
+import mime = require("mime-types");
 import sha256 = require("crypto-js/sha256");
+
+import { ethers } from "ethers";
 
 import * as action from "./action";
 import * as contract from "./contract";
@@ -216,6 +219,18 @@ async function parseArgs() {
         "filepath": paramOptions.filepath,
       }
     };
+  } else if (commandOptions.command === "addv2") {
+    const paramDefinitions = [
+      { name: "filepath", defaultOption: true },
+    ];
+    const paramOptions = commandLineArgs(paramDefinitions,
+                                         { argv, stopAtFirstUnknown: true });
+    return {
+      "command": "addv2",
+      "params": {
+        "filepath": paramOptions.filepath,
+      }
+    };
   } else if (commandOptions.command === "commit") {
     const paramDefinitions = [
       { name: "signoff", alias: "s" },
@@ -354,6 +369,31 @@ async function main() {
 
     // Update current target assetCid
     await setWorkingAssetCid(assetTree.assetCid);
+  } else if (args.command === "addv2") {
+    // Create staged AssetTree
+    const assetBytes = fs.readFileSync(args.params.filepath);
+    const assetMimetype = mime.lookup(args.params.filepath);
+    const assetBirthtime = Math.floor(fs.statSync(args.params.filepath).birthtimeMs / 1000);
+    let assetTree = await nit.createAssetTreeInitialRegister(assetBytes,
+                                                             assetMimetype,
+                                                             assetBirthtime,
+                                                             config.author,
+                                                             config.license);
+    console.log(`Add assetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
+
+    // Check and set up license
+    if (config.license == "custom") {
+      assetTree.license = JSON.parse(config.licenseContent);
+    } else {
+      assetTree.license = license.Licenses[config.license];
+    }
+
+    console.log(`Current AssetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
+
+    // Create staged Commit
+    const commit = await nit.createCommitInitialRegister(blockchain.signer, config.author, config.committer, config.provider);
+
+    console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
   } else if (args.command === "commit") {
     if (await getWorkingAssetCid() === "") {
       console.log("Need to add an assetTree before commit");

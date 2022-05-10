@@ -3,6 +3,10 @@
 import { ethers } from "ethers";
 import fs = require("fs");
 
+import * as action from "./action";
+import * as ipfs from "./ipfs";
+import * as license from "./license";
+
 /*----------------------------------------------------------------------------
  * Configuration
  *----------------------------------------------------------------------------*/
@@ -85,9 +89,61 @@ export async function loadBlockchain(config, abi) {
   };
 }
 
+let stagingAssetTree: any = {};
+let stagingCommit: any = {};
+
 /*----------------------------------------------------------------------------
  * Commands
  *----------------------------------------------------------------------------*/
+async function createAssetTreeBase(assetByes, assetMimetype) {
+  stagingAssetTree = {};
+  try {
+    const ipfsAddResult = await ipfs.infuraIpfsAddBytes(assetByes, assetMimetype);
+    stagingAssetTree.assetCid = ipfsAddResult.assetCid;
+    stagingAssetTree.assetSha256 = ethers.utils.sha256(assetByes);
+    stagingAssetTree.encodingFormat = ipfsAddResult.encodingFormat;
+  } catch(error) {
+    console.error(`${error}`);
+    stagingAssetTree = {};
+  }
+  return stagingAssetTree;
+}
+
+export async function createAssetTreeInitialRegister(assetBytes,
+                                                     assetMimetype,
+                                                     assetTimestampCreated,
+                                                     assetCreatorCid,
+                                                     assetLicense="cc-by-nc",
+                                                     assetAbstract="") {
+  stagingAssetTree = await createAssetTreeBase(assetBytes, assetMimetype);
+  stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
+  stagingAssetTree.assetCreator = assetCreatorCid;
+  stagingAssetTree.license = license.Licenses[assetLicense];
+  stagingAssetTree.abstract = assetAbstract;
+  return stagingAssetTree;
+}
+
+export async function createCommitInitialRegister(signer, authorCid, committerCid, providerCid) {
+  stagingCommit = {};
+
+  const assetTreeBytes = Buffer.from(JSON.stringify(stagingAssetTree, null, 2));
+  const assetTreeMimetype = "application/json";
+
+  stagingCommit.assetTreeCid = (await ipfs.infuraIpfsAddBytes(assetTreeBytes, assetTreeMimetype)).assetCid;
+  // FIXME: Remove leading 0x in sha256 checksum
+  stagingCommit.assetTreeSha256 = await ethers.utils.sha256(Buffer.from(JSON.stringify(stagingAssetTree, null, 2)));
+  stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
+  stagingCommit.author = authorCid;
+  stagingCommit.committer = committerCid;
+  stagingCommit.action = action.Actions["action-initial-registration"];
+  stagingCommit.actionResult = `https://${stagingCommit.assetTreeCid}.ipfs.dweb.link`;
+  stagingCommit.provider = providerCid;
+  stagingCommit.abstract = "Initial registration.";
+  stagingCommit.timestampCreated = Math.floor(Date.now() / 1000);
+
+  return stagingCommit;
+}
+
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
   const r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
   return r;
