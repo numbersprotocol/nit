@@ -1,6 +1,7 @@
 import axios from 'axios';
 import FormData = require("form-data");
 import fs = require("fs");
+import got from "got";
 import mime = require("mime-types");
 
 let ProjectId = "";
@@ -39,4 +40,17 @@ export async function infuraIpfsAddBytes(bytes, mimeType) {
     "assetCid": assetCid,
     "encodingFormat": mimeType
   }
+}
+
+export async function infuraIpfsCat(cid) {
+  const url = `https://ipfs.infura.io:5001/api/v0/cat?arg=${cid}`;
+  const authBase64 = Buffer.from(`${ProjectId}:${ProjectSecret}`).toString('base64');
+  const requestConfig = {
+    "headers": {
+      "Authorization": `Bearer ${authBase64}`,
+    },
+    timeout: { request: 30000 },
+  }
+  const r = await got.post(url, requestConfig);
+  return r.rawBody;
 }

@@ -8,6 +8,8 @@ import commandLineUsage = require("command-line-usage");
 import mime = require("mime-types");
 import sha256 = require("crypto-js/sha256");
 
+import got from "got";
+
 import * as action from "./action";
 import * as contract from "./contract";
 import * as ipfs from "./ipfs";
@@ -245,8 +247,8 @@ async function parseArgs() {
     const paramDefinitions = [
       { name: "filepath", defaultOption: true },
       { name: "message", alias: "m" },
-      { name: "nft-record-cid"},
-      { name: "integrity-cid"},
+      { name: "nft-record-cid" },
+      { name: "integrity-cid" },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
                                          { argv, stopAtFirstUnknown: true });
@@ -310,6 +312,36 @@ async function parseArgs() {
       "params": {}
     }
   }
+}
+
+async function assetSourceToBytes(source) {
+  console.log("call assetSourceToBytes");
+  let assetBytes;
+  if (source.substring(0, 4) === "bafy") {
+    console.log("source cid");
+    assetBytes = await ipfs.infuraIpfsCat(source);
+  } else if (source.substring(0, 4) === "http") {
+    console.log("source http");
+    assetBytes = (await got.get(source, { timeout: { request: 30000 } })).rawBody;
+  } else {
+    console.log("source filepath");
+    assetBytes = fs.readFileSync(source);
+  }
+  console.log(`${assetBytes.length}`);
+  return assetBytes;
+}
+
+async function getMimetypeFromBytes(bytes) {
+  /* The mime-types module relies on filename extension,
+   * so saving a temporary file will not work, and the MimeType
+   * will be "false".
+   *
+   * To get MimeType based on the magic number in a file,
+   * file-type module might be a solution.
+   *
+   * The problem is that file-type only supports ES-Module currently.
+   * https://github.com/sindresorhus/file-type/issues/525
+   */
 }
 
 async function main() {
@@ -382,10 +414,15 @@ async function main() {
     // Update current target assetCid
     await setWorkingAssetCid(assetTree.assetCid);
   } else if (args.command === "add") {
+    console.log(`args.params: ${JSON.stringify(args.params)}`);
+
     // Create staged AssetTree
     const assetBytes = fs.readFileSync(args.params.filepath);
     const assetMimetype = mime.lookup(args.params.filepath);
     const assetBirthtime = Math.floor(fs.statSync(args.params.filepath).birthtimeMs / 1000);
+    //const assetBytes = await assetSourceToBytes(args.params.filepath);
+    //const assetMimetype = await getMimetypeFromBytes(assetBytes);
+    //const assetBirthtime = Math.floor(Date.now() / 1000);
     let assetTree = await nit.createAssetTreeInitialRegister(assetBytes,
                                                              assetMimetype,
                                                              assetBirthtime,
