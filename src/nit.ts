@@ -101,7 +101,8 @@ async function createAssetTreeBase(assetByes, assetMimetype) {
   try {
     const ipfsAddResult = await ipfs.infuraIpfsAddBytes(assetByes, assetMimetype);
     stagingAssetTree.assetCid = ipfsAddResult.assetCid;
-    stagingAssetTree.assetSha256 = ethers.utils.sha256(assetByes);
+    // remove leading 0x to as the same as most sha256 tools
+    stagingAssetTree.assetSha256 = (await ethers.utils.sha256(assetByes)).substring(2);
     stagingAssetTree.encodingFormat = ipfsAddResult.encodingFormat;
   } catch(error) {
     console.error(`${error}`);
@@ -117,6 +118,7 @@ async function createCommitBase(signer, authorCid, committerCid, providerCid) {
   const assetTreeMimetype = "application/json";
 
   stagingCommit.assetTreeCid = (await ipfs.infuraIpfsAddBytes(assetTreeBytes, assetTreeMimetype)).assetCid;
+  // remove leading 0x to as the same as most sha256 tools
   stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(stagingAssetTree, null, 2)))).substring(2);
   stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
   stagingCommit.author = authorCid;
