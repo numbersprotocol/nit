@@ -1,6 +1,6 @@
 {
   "name": "@numbersprotocol/nit",
-  "version": "1.1.0",
+  "version": "1.2.0-alpha.0",
   "description": "git for web3 digital asset",
   "main": "lib/nit.js",
   "repository": "https://github.com/numbersprotocol/nit",
