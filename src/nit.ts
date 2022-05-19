@@ -181,6 +181,28 @@ export async function log(assetCid: string, blockchainInfo) {
   }
 }
 
+export async function getLatestCommitBlock(assetCid, blockchainInfo) {
+  const commitBlockNumbers = await blockchainInfo.contract.getCommits(assetCid);
+  return commitBlockNumbers[commitBlockNumbers.length - 1].toNumber();
+}
+
+export async function getLatestCommitSummary(assetCid, blockchainInfo) {
+  const commitBlockNumber = await getLatestCommitBlock(assetCid, blockchainInfo);
+  const filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
+  let events = await blockchainInfo.contract.queryFilter(filter, commitBlockNumber, commitBlockNumber);
+  const commitDataIndex = 2;
+  return {
+    "blockNumber": commitBlockNumber,
+    "commit": JSON.parse(events[0].args![commitDataIndex])
+  }
+}
+
+export async function getAssetTree(assetTreeCid) {
+  const assetTreeBytes = await ipfs.infuraIpfsCat(assetTreeCid);
+  const assetTree = JSON.parse(assetTreeBytes.toString());
+  return assetTree;
+}
+
 async function eventLogRangeQuery(assetCid: string, blockchainInfo) {
   console.log(`Commit logs of assetCid: ${assetCid}`);
   const commits = await blockchainInfo.contract.getCommits(assetCid);
