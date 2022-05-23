@@ -6,6 +6,7 @@ import fs = require("fs");
 import * as action from "./action";
 import * as ipfs from "./ipfs";
 import * as license from "./license";
+import * as util from "./util";
 
 /*----------------------------------------------------------------------------
  * Configuration
@@ -90,8 +91,21 @@ export async function loadBlockchain(config, abi) {
   };
 }
 
+// FIXME: Remove this design because developers need to remember
+//        updating the staging status at any necessary place.
+//        Developers will make mistakes easily.
 let stagingAssetTree: any = {};
 let stagingCommit: any = {};
+
+const configurableAssetTreeKeys = [
+  "assetCreator",
+  "assetTimestampCreated",
+  "license",
+  "nftRecord",
+  "integrityCid",
+  "abstract",
+  "encodingFormat",
+];
 
 /*----------------------------------------------------------------------------
  * Commands
@@ -99,11 +113,10 @@ let stagingCommit: any = {};
 async function createAssetTreeBase(assetByes, assetMimetype) {
   stagingAssetTree = {};
   try {
-    const ipfsAddResult = await ipfs.infuraIpfsAddBytes(assetByes, assetMimetype);
-    stagingAssetTree.assetCid = ipfsAddResult.assetCid;
+    stagingAssetTree.assetCid = await ipfs.infuraIpfsAddBytes(assetByes);
     // remove leading 0x to as the same as most sha256 tools
     stagingAssetTree.assetSha256 = (await ethers.utils.sha256(assetByes)).substring(2);
-    stagingAssetTree.encodingFormat = ipfsAddResult.encodingFormat;
+    stagingAssetTree.encodingFormat = assetMimetype;
   } catch(error) {
     console.error(`${error}`);
     stagingAssetTree = {};
@@ -117,7 +130,7 @@ async function createCommitBase(signer, authorCid, committerCid, providerCid) {
   const assetTreeBytes = Buffer.from(JSON.stringify(stagingAssetTree, null, 2));
   const assetTreeMimetype = "application/json";
 
-  stagingCommit.assetTreeCid = (await ipfs.infuraIpfsAddBytes(assetTreeBytes, assetTreeMimetype)).assetCid;
+  stagingCommit.assetTreeCid = await ipfs.infuraIpfsAddBytes(assetTreeBytes);
   // remove leading 0x to as the same as most sha256 tools
   stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(stagingAssetTree, null, 2)))).substring(2);
   stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
@@ -163,6 +176,47 @@ export async function createCommitMintErc721Nft(signer, authorCid, committerCid,
 }
 */
 
+export async function updateAssetTree(assetTree, assetTreeUpdates) {
+  const assetTreeKeySet = new Set(configurableAssetTreeKeys);
+  const assetTreeUpdatesKeySet = new Set(Object.keys(assetTreeUpdates));
+  console.log(`assetTreeKeySet: ${Array.from(assetTreeKeySet)}`);
+  console.log(`assetTreeUpdatesKeySet : ${Array.from(assetTreeUpdatesKeySet)}`);
+
+  const isSuperset = util.isSuperset(assetTreeKeySet, assetTreeUpdatesKeySet);
+  console.log(`isSuperset: ${isSuperset}`);
+  if (isSuperset) {
+    for (let key of Object.keys(assetTreeUpdates)) {
+      console.log(`key: ${key}`);
+      assetTree[key] = assetTreeUpdates[key];
+    }
+    return assetTree;
+  } else {
+    // find illegal assetTreeUpdates, return assetTree directly
+    console.log(`Asset Tree Updates is not a legal subset`);
+    return assetTree
+  }
+}
+
+export async function pull(assetCid: string, blockchainInfo) {
+  const latestCommit = await getLatestCommitSummary(assetCid, blockchainInfo);
+  if (latestCommit != null) {
+    const assetTree = await getAssetTree(latestCommit.commit.assetTreeCid);
+    stagingAssetTree = assetTree;
+    return assetTree;
+  } else {
+    return null
+  }
+}
+
+//export async function add(assetCid, assetUpdates, blockchainInfo) {
+//  const latestAssetTree = await pull(assetCid, blockchainInfo);
+//  if (latestAssetTree != null) {
+//    return await updateAssetTree(latestAssetTree, assetUpdates);
+//  } else {
+//    // Asset has not been registered
+//  }
+//}
+
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
   const r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
   return r;
@@ -182,19 +236,67 @@ export async function log(assetCid: string, blockchainInfo) {
 }
 
 export async function getLatestCommitBlock(assetCid, blockchainInfo) {
+  /* Returns
+   *   Commit Block Number: if Asset Cid has been registerd
+   *   null: if Asset Cid has NOT been registerd
+   */
   const commitBlockNumbers = await blockchainInfo.contract.getCommits(assetCid);
-  return commitBlockNumbers[commitBlockNumbers.length - 1].toNumber();
+  if (commitBlockNumbers.length > 0) {
+    return commitBlockNumbers[commitBlockNumbers.length - 1].toNumber();
+  } else {
+    // Asset CID has not been registered
+    return null;
+  }
 }
 
 export async function getLatestCommitSummary(assetCid, blockchainInfo) {
   const commitBlockNumber = await getLatestCommitBlock(assetCid, blockchainInfo);
-  const filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
-  let events = await blockchainInfo.contract.queryFilter(filter, commitBlockNumber, commitBlockNumber);
-  const commitDataIndex = 2;
-  return {
-    "blockNumber": commitBlockNumber,
-    "commit": JSON.parse(events[0].args![commitDataIndex])
+  let filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
+  filter.fromBlock = commitBlockNumber;
+  filter.toBlock = commitBlockNumber;
+  const eventLogs = await blockchainInfo.provider.getLogs(filter);
+  const abi = [
+    "event Commit(address indexed recorder, string indexed assetCid, string commitData)"
+  ];
+  const commitEventInterface = new ethers.utils.Interface(abi);
+
+  if (eventLogs.length === 1) {
+    console.log(`\nBlock number: ${(eventLogs[0].blockNumber)}`);
+    console.log(`${blockchainInfo.explorerBaseUrl}/${(eventLogs[0].transactionHash)}`);
+
+    const commitEvent = commitEventInterface.parseLog(eventLogs[0]);
+    console.log(`commitEvent: ${JSON.stringify(commitEvent, null, 2)}`);
+
+    try {
+      const commitDataIndex = 2;
+      const commitData = JSON.parse(commitEvent.args[commitDataIndex]);
+      console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
+      return {
+        "blockNumber": eventLogs[0].blockNumber,
+        "commit": commitData,
+      }
+    } catch (error) {
+      console.error(`Failed to parse Commit, error: ${error}`);
+      return null
+    }
+  } else {
+    console.log(`ERROR: eventLogs.length: ${eventLogs.length}`);
+    return null
   }
+
+  /*
+  let events = await blockchainInfo.contract.queryFilter(filter, commitBlockNumber, commitBlockNumber);
+  if (events.length === 1) {
+    const commitDataIndex = 2;
+    return {
+      "blockNumber": commitBlockNumber,
+      "commit": JSON.parse(events[0].args![commitDataIndex])
+    }
+  } else {
+    // Asset has not been registered
+    return null;
+  }
+  */
 }
 
 export async function getAssetTree(assetTreeCid) {

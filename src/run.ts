@@ -249,6 +249,7 @@ async function parseArgs() {
       { name: "message", alias: "m" },
       { name: "nft-record-cid" },
       { name: "integrity-cid" },
+      { name: "mockup" },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
                                          { argv, stopAtFirstUnknown: true });
@@ -418,42 +419,61 @@ async function main() {
 
     // Create staged AssetTree
     const assetBytes = fs.readFileSync(args.params.filepath);
-    const assetMimetype = mime.lookup(args.params.filepath);
-    const assetBirthtime = Math.floor(fs.statSync(args.params.filepath).birthtimeMs / 1000);
     //const assetBytes = await assetSourceToBytes(args.params.filepath);
-    //const assetMimetype = await getMimetypeFromBytes(assetBytes);
-    //const assetBirthtime = Math.floor(Date.now() / 1000);
-    let assetTree = await nit.createAssetTreeInitialRegister(assetBytes,
-                                                             assetMimetype,
-                                                             assetBirthtime,
-                                                             config.author,
-                                                             config.license);
-    console.log(`Add assetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
 
+    let assetCid;
+    if ("mockup" in args.params === false) {
+      assetCid = await ipfs.infuraIpfsAddBytes(assetBytes);
+    } else {
+      console.log(`Run add with mockup CID`);
+      assetCid = "a".repeat(nit.cidv1Length);
+    }
+    let assetTree = await nit.pull(assetCid, blockchain);
+    if (assetTree === null) {
+      const assetMimetype = mime.lookup(args.params.filepath);
+      const assetBirthtime = Math.floor(fs.statSync(args.params.filepath).birthtimeMs / 1000);
+      //const assetMimetype = await getMimetypeFromBytes(assetBytes);
+      //const assetBirthtime = Math.floor(Date.now() / 1000);
+
+      assetTree = await nit.createAssetTreeInitialRegister(assetBytes,
+                                                           assetMimetype,
+                                                           assetBirthtime,
+                                                           config.author,
+                                                           config.license);
+      console.log(`Add assetTree (initial registration): ${JSON.stringify(assetTree, null, 2)}\n`);
+    } else {
+      console.log(`Add assetTree (latest commit): ${JSON.stringify(assetTree, null, 2)}\n`);
+    }
+
+    let assetTreeUpdates: any = {};
     // Check and set up license
     if (config.license == "custom") {
-      assetTree.license = JSON.parse(config.licenseContent);
+      assetTreeUpdates.license = JSON.parse(config.licenseContent);
     } else {
-      assetTree.license = license.Licenses[config.license];
+      assetTreeUpdates.license = license.Licenses[config.license];
     }
 
     if ("message" in args.params) {
-      assetTree.abstract = args.params["message"];
+      assetTreeUpdates.abstract = args.params["message"];
     }
     if ("nft-record-cid" in args.params) {
-      assetTree.nftRecord = args.params["nft-record-cid"];
+      assetTreeUpdates.nftRecord = args.params["nft-record-cid"];
     }
     if ("integrity-cid" in args.params) {
-      assetTree.integrityCid= args.params["integrity-cid"];
+      assetTreeUpdates.integrityCid= args.params["integrity-cid"];
     }
-    console.log(`Current AssetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
+    console.log(`Current Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
+    console.log(`Current Asset Tree Updates: ${JSON.stringify(assetTreeUpdates, null, 2)}\n`);
+
+    const updatedAssetTree = await nit.updateAssetTree(assetTree, assetTreeUpdates);
+    console.log(`Updated Asset Tree: ${JSON.stringify(updatedAssetTree, null, 2)}\n`);
 
     // Create staged Commit
     const commit = await nit.createCommitInitialRegister(blockchain.signer, config.author, config.committer, config.provider);
     console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
 
     // Stage
-    await stage(assetTree.assetCid, assetTree, commit);
+    await stage(updatedAssetTree.assetCid, updatedAssetTree, commit);
   } else if (args.command === "commit") {
     const assetCid = await getWorkingAssetCid();
 

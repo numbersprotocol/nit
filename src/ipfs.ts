@@ -15,10 +15,13 @@ export async function initInfura(projectId, projectSecret) {
 export async function infuraIpfsAdd(filePath: string) {
   const contentBytes = fs.readFileSync(filePath);
   const encodingFormat = mime.lookup(filePath);
-  return await infuraIpfsAddBytes(contentBytes, encodingFormat);
+  return {
+    "assetCid": await infuraIpfsAddBytes(contentBytes),
+    "encodingFormat": encodingFormat
+  };
 }
 
-export async function infuraIpfsAddBytes(bytes, mimeType) {
+export async function infuraIpfsAddBytes(bytes) {
   const { Readable } = require("stream");
   const fileReadStream = Readable.from(bytes);
 
@@ -35,11 +38,7 @@ export async function infuraIpfsAddBytes(bytes, mimeType) {
   }
   const r = await axios.post(url, formData, requestConfig);
   const assetCid = r.data.Hash;
-
-  return {
-    "assetCid": assetCid,
-    "encodingFormat": mimeType
-  }
+  return assetCid;
 }
 
 export async function infuraIpfsCat(cid) {
