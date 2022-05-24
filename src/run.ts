@@ -415,8 +415,6 @@ async function main() {
     // Update current target assetCid
     await setWorkingAssetCid(assetTree.assetCid);
   } else if (args.command === "add") {
-    console.log(`args.params: ${JSON.stringify(args.params)}`);
-
     // Create staged AssetTree
     const assetBytes = fs.readFileSync(args.params.filepath);
     //const assetBytes = await assetSourceToBytes(args.params.filepath);
@@ -425,7 +423,6 @@ async function main() {
     if ("mockup" in args.params === false) {
       assetCid = await ipfs.infuraIpfsAddBytes(assetBytes);
     } else {
-      console.log(`Run add with mockup CID`);
       assetCid = "a".repeat(nit.cidv1Length);
     }
     let assetTree = await nit.pull(assetCid, blockchain);
@@ -440,9 +437,9 @@ async function main() {
                                                            assetBirthtime,
                                                            config.author,
                                                            config.license);
-      console.log(`Add assetTree (initial registration): ${JSON.stringify(assetTree, null, 2)}\n`);
+      console.log("Asset Tree is from initial registration\n");
     } else {
-      console.log(`Add assetTree (latest commit): ${JSON.stringify(assetTree, null, 2)}\n`);
+      console.log("Asset Tree is from latest commit\n");
     }
 
     let assetTreeUpdates: any = {};

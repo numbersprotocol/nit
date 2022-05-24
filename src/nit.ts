@@ -179,14 +179,11 @@ export async function createCommitMintErc721Nft(signer, authorCid, committerCid,
 export async function updateAssetTree(assetTree, assetTreeUpdates) {
   const assetTreeKeySet = new Set(configurableAssetTreeKeys);
   const assetTreeUpdatesKeySet = new Set(Object.keys(assetTreeUpdates));
-  console.log(`assetTreeKeySet: ${Array.from(assetTreeKeySet)}`);
-  console.log(`assetTreeUpdatesKeySet : ${Array.from(assetTreeUpdatesKeySet)}`);
 
   const isSuperset = util.isSuperset(assetTreeKeySet, assetTreeUpdatesKeySet);
-  console.log(`isSuperset: ${isSuperset}`);
+
   if (isSuperset) {
     for (let key of Object.keys(assetTreeUpdates)) {
-      console.log(`key: ${key}`);
       assetTree[key] = assetTreeUpdates[key];
     }
     return assetTree;
@@ -261,18 +258,13 @@ export async function getLatestCommitSummary(assetCid, blockchainInfo) {
   const commitEventInterface = new ethers.utils.Interface(abi);
 
   if (eventLogs.length === 1) {
-    console.log(`\nBlock number: ${(eventLogs[0].blockNumber)}`);
-    console.log(`${blockchainInfo.explorerBaseUrl}/${(eventLogs[0].transactionHash)}`);
-
     const commitEvent = commitEventInterface.parseLog(eventLogs[0]);
-    console.log(`commitEvent: ${JSON.stringify(commitEvent, null, 2)}`);
-
     try {
       const commitDataIndex = 2;
       const commitData = JSON.parse(commitEvent.args[commitDataIndex]);
-      console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
       return {
         "blockNumber": eventLogs[0].blockNumber,
+        "txHash": eventLogs[0].transactionHash,
         "commit": commitData,
       }
     } catch (error) {
