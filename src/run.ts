@@ -462,15 +462,19 @@ async function main() {
     console.log(`Current Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
     console.log(`Current Asset Tree Updates: ${JSON.stringify(assetTreeUpdates, null, 2)}\n`);
 
-    const updatedAssetTree = await nit.updateAssetTree(assetTree, assetTreeUpdates);
-    console.log(`Updated Asset Tree: ${JSON.stringify(updatedAssetTree, null, 2)}\n`);
+    if (Object.keys(assetTreeUpdates).length > 0) {
+      const updatedAssetTree = await nit.updateAssetTree(assetTree, assetTreeUpdates);
+      console.log(`Updated Asset Tree: ${JSON.stringify(updatedAssetTree, null, 2)}\n`);
 
-    // Create staged Commit
-    const commit = await nit.createCommitInitialRegister(blockchain.signer, config.author, config.committer, config.provider);
-    console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
+      // Create staged Commit
+      const commit = await nit.createCommitInitialRegister(blockchain.signer, config.author, config.committer, config.provider);
+      console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
 
-    // Stage
-    await stage(updatedAssetTree.assetCid, updatedAssetTree, commit);
+      // Stage
+      await stage(updatedAssetTree.assetCid, updatedAssetTree, commit);
+    } else {
+      console.error("No update and skip this command");
+    }
   } else if (args.command === "commit") {
     const assetCid = await getWorkingAssetCid();
 
