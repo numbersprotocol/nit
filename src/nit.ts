@@ -1,9 +1,8 @@
-#!/usr/bin/env ts-node
-
 import { ethers } from "ethers";
 import fs = require("fs");
 
 import * as action from "./action";
+import * as integrityContract from "./contract";
 import * as ipfs from "./ipfs";
 import * as license from "./license";
 import * as util from "./util";
@@ -72,15 +71,16 @@ export const nitconfigTemplate = {
   }
 };
 
-export async function loadBlockchain(config, abi) {
+export async function loadBlockchain(config) {
   const networkConfig = config.network[config.defaultNetwork];
   const provider = new ethers.providers.JsonRpcProvider(networkConfig.url);
+  const contractAbi = integrityContract.abi;
 
   const [signerPrivateKey, user] = networkConfig.accounts;
   let signer = new ethers.Wallet(signerPrivateKey);
   signer = signer.connect(provider);
 
-  const contract = new ethers.Contract(networkConfig.contract, abi, signer);
+  const contract = new ethers.Contract(networkConfig.contract, contractAbi, signer);
 
   return {
     "contract": contract,

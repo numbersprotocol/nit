@@ -11,7 +11,6 @@ import sha256 = require("crypto-js/sha256");
 import got from "got";
 
 import * as action from "./action";
-import * as contract from "./contract";
 import * as ipfs from "./ipfs";
 import * as license from "./license";
 import * as nit from "./nit";
@@ -361,7 +360,7 @@ async function main() {
   }
 
   const config = await loadConfig();
-  const blockchain = await nit.loadBlockchain(config, contract.abi);
+  const blockchain = await nit.loadBlockchain(config);
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
 
