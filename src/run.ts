@@ -259,6 +259,7 @@ async function parseArgs() {
       //{ name: "license", defaultValue: license.DefaultLicense },
       { name: "license" },
       { name: "custom-license" },
+      { name: "update", alias: "u" },
       { name: "mockup" },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
@@ -444,36 +445,39 @@ async function main() {
       console.log("Asset Tree is from latest commit\n");
     }
 
+    /* Create Asset Tree updates */
     let assetTreeUpdates: any = {};
-    // Check and set up license
-
-    if ("message" in args.params) {
-      assetTreeUpdates.abstract = args.params["message"];
-    }
-    if ("nft-record-cid" in args.params) {
-      assetTreeUpdates.nftRecord = args.params["nft-record-cid"];
-    }
-    if ("integrity-cid" in args.params) {
-      assetTreeUpdates.integrityCid= args.params["integrity-cid"];
-    }
-    if (license.isSupportedLicense(args.params.license)) {
-      assetTreeUpdates.license = license.Licenses[args.params.license];
+    if ("update" in args.params) {
+        assetTreeUpdates = JSON.parse(args.params.update);
     } else {
-      console.error(`Get unsupported or default license: ${args.params.license}\n`);
+        if ("message" in args.params) {
+          assetTreeUpdates.abstract = args.params["message"];
+        }
+        if ("nft-record-cid" in args.params) {
+          assetTreeUpdates.nftRecord = args.params["nft-record-cid"];
+        }
+        if ("integrity-cid" in args.params) {
+          assetTreeUpdates.integrityCid= args.params["integrity-cid"];
+        }
+        if (license.isSupportedLicense(args.params.license)) {
+          assetTreeUpdates.license = license.Licenses[args.params.license];
+        } else {
+          console.error(`Get unsupported or default license: ${args.params.license}\n`);
+        }
+        // Custom license will override default or specified license
+        if ("custom-license" in args.params) {
+          assetTreeUpdates.license = JSON.parse(args.params["custom-license"]);
+        }
     }
-    // Custom license will override default or specified license
-    if ("custom-license" in args.params) {
-      assetTreeUpdates.license = JSON.parse(args.params["custom-license"]);
-    }
-
     console.log(`Current Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
     console.log(`Current Asset Tree Updates: ${JSON.stringify(assetTreeUpdates, null, 2)}\n`);
 
+    /* Create staged Asset Tree & staged Commit if there is any Asset Tree update */
     if (Object.keys(assetTreeUpdates).length > 0) {
       const updatedAssetTree = await nit.updateAssetTree(assetTree, assetTreeUpdates);
       console.log(`Updated Asset Tree: ${JSON.stringify(updatedAssetTree, null, 2)}\n`);
+      console.log(`Original Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
 
-      // Create staged Commit
       const commit = await nit.createCommit(blockchain.signer, config.author, config.committer, config.provider);
       console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
 

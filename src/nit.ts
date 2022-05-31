@@ -180,7 +180,7 @@ export async function createCommitMintErc721Nft(signer, authorCid, committerCid,
 }
 */
 
-export async function updateAssetTree(assetTree, assetTreeUpdates) {
+export async function updateAssetTreeLegacy(assetTree, assetTreeUpdates) {
   const assetTreeKeySet = new Set(configurableAssetTreeKeys);
   const assetTreeUpdatesKeySet = new Set(Object.keys(assetTreeUpdates));
 
@@ -196,6 +196,15 @@ export async function updateAssetTree(assetTree, assetTreeUpdates) {
     console.log(`Asset Tree Updates is not a legal subset`);
     return assetTree
   }
+}
+
+export async function updateAssetTree(assetTree, assetTreeUpdates) {
+  /* Extend Asset Tree with given updates.
+   */
+  for (let key of Object.keys(assetTreeUpdates)) {
+    assetTree[key] = assetTreeUpdates[key];
+  }
+  return assetTree;
 }
 
 export async function pull(assetCid: string, blockchainInfo) {
