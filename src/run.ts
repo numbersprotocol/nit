@@ -134,7 +134,13 @@ async function help() {
     {
       header: 'add',
       content: [
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract}",
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract} --nft-record-cid {underline cid}",
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract} --integrity-cid {underline cid}",
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract} --license mit",
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract} --custom-license {underline license-json}",
         "$ nit add {underline assetFilepath} -m|--message {underline abstract} --nft-record-cid {underline cid} --integrity-cid {underline cid}",
+        "$ nit add {underline assetFilepath} -m|--message {underline abstract} --nft-record-cid {underline cid} --integrity-cid {underline cid} --license mit",
       ]
     },
     {
