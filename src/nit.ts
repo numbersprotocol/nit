@@ -160,6 +160,15 @@ export async function createCommitInitialRegister(signer, authorCid, committerCi
   return stagingCommit;
 }
 
+export async function createCommit(signer, authorCid, committerCid, providerCid) {
+  stagingCommit = await createCommitBase(signer, authorCid, committerCid, providerCid);
+  stagingCommit.action = "";
+  stagingCommit.actionResult = "";
+  stagingCommit.abstract = `Nit Commit created by ${signer.address}.`;
+  stagingCommit.timestampCreated = Math.floor(Date.now() / 1000);
+  return stagingCommit;
+}
+
 /*
 export async function createCommitMintErc721Nft(signer, authorCid, committerCid, providerCid, actionIndex, actionResult) {
   stagingCommit = await createCommitBase(signer, authorCid, committerCid, providerCid);
