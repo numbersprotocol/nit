@@ -1,7 +1,7 @@
 export const Actions = {
   "action-initial-registration": "bafkreiavifzn7ntlb6p2lr55k3oezo6pofwvknecukc5auhng4miowcte4",
-  "action-mint-erc721-nft-ethereum": "bafkreigbfdnawmc4kt6r3r2hl7bq52sf2ffdszo3tjaqtden532eu6td34",
-  "action-mint-erc721-nft-avalanche": "bafkreieyiho7xc76dzvvculzy4sqb2ufykzch65v6xc7e7mgtsuki63aum",
-  "action-mint-erc721-nft-polygon": "bafkreih5iopi3thjmzjxp3budax3nxw4up6bejyglgavbvqjge7ls3cpbe",
-  "action-mint-erc721-nft-thundercore": "bafkreiduxz4kx5ciythnmvw5vlcwdrvhvgdbhq5nnmqj56sicis4et6n3u",
+  "action-mint-erc721-nft-ethereum": "bafkreighzhmelvwlntigjq6ushun4mz36x6cq5nztkvcac47bdxz2ipeca",
+  "action-mint-erc721-nft-avalanche": "bafkreibro4v4vsibvr47uwhkj6gqpc5rfvvq5ykfzzz4jnzvm23zwoh2gq",
+  "action-mint-erc721-nft-polygon": "bafkreigdxfmwhhepusyhaoidyzy6bv7jzpc5liqohyc6numgvvbfwabn6a",
+  "action-mint-erc721-nft-thundercore": "bafkreih7gzxeukcnosbotvpq7hw6htlxoi2dzzm2nnkskloazgw2sbh55i",
 };
