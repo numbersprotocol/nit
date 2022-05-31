@@ -89,7 +89,6 @@ export async function loadBlockchain(config) {
 // FIXME: Remove this design because developers need to remember
 //        updating the staging status at any necessary place.
 //        Developers will make mistakes easily.
-let stagingAssetTree: any = {};
 let stagingCommit: any = {};
 
 const configurableAssetTreeKeys = [
@@ -106,7 +105,7 @@ const configurableAssetTreeKeys = [
  * Commands
  *----------------------------------------------------------------------------*/
 async function createAssetTreeBase(assetByes, assetMimetype) {
-  stagingAssetTree = {};
+  let stagingAssetTree: any = {};
   try {
     stagingAssetTree.assetCid = await ipfs.infuraIpfsAddBytes(assetByes);
     // remove leading 0x to as the same as most sha256 tools
@@ -119,15 +118,14 @@ async function createAssetTreeBase(assetByes, assetMimetype) {
   return stagingAssetTree;
 }
 
-async function createCommitBase(signer, authorCid, committerCid, providerCid) {
+async function createCommitBase(signer, assetTree, authorCid, committerCid, providerCid) {
   stagingCommit = {};
 
-  const assetTreeBytes = Buffer.from(JSON.stringify(stagingAssetTree, null, 2));
-  const assetTreeMimetype = "application/json";
-
+  const assetTreeBytes = Buffer.from(JSON.stringify(assetTree, null, 2));
   stagingCommit.assetTreeCid = await ipfs.infuraIpfsAddBytes(assetTreeBytes);
+  stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(assetTree, null, 2)))).substring(2);
+  console.log(`createCommitBase: Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
   // remove leading 0x to as the same as most sha256 tools
-  stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(stagingAssetTree, null, 2)))).substring(2);
   stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
   stagingCommit.author = authorCid;
   stagingCommit.committer = committerCid;
@@ -143,7 +141,7 @@ export async function createAssetTreeInitialRegister(assetBytes,
                                                      assetCreatorCid,
                                                      assetLicense="cc-by-nc",
                                                      assetAbstract="") {
-  stagingAssetTree = await createAssetTreeBase(assetBytes, assetMimetype);
+  let stagingAssetTree = await createAssetTreeBase(assetBytes, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreatorCid;
   stagingAssetTree.license = license.Licenses[assetLicense];
@@ -151,8 +149,8 @@ export async function createAssetTreeInitialRegister(assetBytes,
   return stagingAssetTree;
 }
 
-export async function createCommitInitialRegister(signer, authorCid, committerCid, providerCid) {
-  stagingCommit = await createCommitBase(signer, authorCid, committerCid, providerCid);
+export async function createCommitInitialRegister(signer, assetTree, authorCid, committerCid, providerCid) {
+  stagingCommit = await createCommitBase(signer, assetTree, authorCid, committerCid, providerCid);
   stagingCommit.action = action.Actions["action-initial-registration"];
   stagingCommit.actionResult = `https://${stagingCommit.assetTreeCid}.ipfs.dweb.link`;
   stagingCommit.abstract = "Action action-initial-registration.";
@@ -160,8 +158,8 @@ export async function createCommitInitialRegister(signer, authorCid, committerCi
   return stagingCommit;
 }
 
-export async function createCommit(signer, authorCid, committerCid, providerCid) {
-  stagingCommit = await createCommitBase(signer, authorCid, committerCid, providerCid);
+export async function createCommit(signer, assetTree, authorCid, committerCid, providerCid) {
+  stagingCommit = await createCommitBase(signer, assetTree, authorCid, committerCid, providerCid);
   stagingCommit.action = "";
   stagingCommit.actionResult = "";
   stagingCommit.abstract = `Nit Commit created by ${signer.address}.`;
@@ -201,17 +199,17 @@ export async function updateAssetTreeLegacy(assetTree, assetTreeUpdates) {
 export async function updateAssetTree(assetTree, assetTreeUpdates) {
   /* Extend Asset Tree with given updates.
    */
+  let assetTreeCopy = util.deepCopy(assetTree);
   for (let key of Object.keys(assetTreeUpdates)) {
-    assetTree[key] = assetTreeUpdates[key];
+    assetTreeCopy[key] = assetTreeUpdates[key];
   }
-  return assetTree;
+  return assetTreeCopy;
 }
 
 export async function pull(assetCid: string, blockchainInfo) {
   const latestCommit = await getLatestCommitSummary(assetCid, blockchainInfo);
   if (latestCommit != null) {
     const assetTree = await getAssetTree(latestCommit.commit.assetTreeCid);
-    stagingAssetTree = assetTree;
     return assetTree;
   } else {
     return null

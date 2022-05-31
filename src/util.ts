@@ -6,3 +6,9 @@ export function isSuperset(set: Set<string>, subset: Set<string>) {
   }
   return true
 }
+
+/* Deep copy pure data which does not contain any function.
+ */
+export function deepCopy(data) {
+  return JSON.parse(JSON.stringify(data));
+}

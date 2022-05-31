@@ -478,7 +478,7 @@ async function main() {
       console.log(`Updated Asset Tree: ${JSON.stringify(updatedAssetTree, null, 2)}\n`);
       console.log(`Original Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
 
-      const commit = await nit.createCommit(blockchain.signer, config.author, config.committer, config.provider);
+      const commit = await nit.createCommit(blockchain.signer, updatedAssetTree, config.author, config.committer, config.provider);
       console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
 
       // Stage
