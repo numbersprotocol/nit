@@ -34,3 +34,13 @@ export const Licenses = {
     "document": "https://opensource.org/licenses/MIT"
   },
 };
+
+export const DefaultLicense: string = "cc-by-nc";
+
+export function isSupportedLicense(licenseName: string) {
+  if (Object.keys(Licenses).indexOf(licenseName) > -1) {
+    return true;
+  } else {
+    return false;
+  }
+}

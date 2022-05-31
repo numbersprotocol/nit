@@ -248,6 +248,11 @@ async function parseArgs() {
       { name: "message", alias: "m" },
       { name: "nft-record-cid" },
       { name: "integrity-cid" },
+      // FIXME: Support default license when latest Asset Tree
+      //        and staging Asset Tree comparison is ready.
+      //{ name: "license", defaultValue: license.DefaultLicense },
+      { name: "license" },
+      { name: "custom-license" },
       { name: "mockup" },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
@@ -378,13 +383,6 @@ async function main() {
       fs.mkdirSync(commitDir);
     } else {}
 
-    // Check and set up license
-    if (config.license == "custom") {
-      assetTree.license = JSON.parse(config.licenseContent);
-    } else {
-      assetTree.license = license.Licenses[config.license];
-    }
-
     // Create staged assetTree file
     console.log(`Current assetTree: ${JSON.stringify(assetTree, null, 2)}\n`);
     fs.writeFileSync(`${commitDir}/assetTree.json`, JSON.stringify(assetTree, null, 2));
@@ -434,8 +432,7 @@ async function main() {
       assetTree = await nit.createAssetTreeInitialRegister(assetBytes,
                                                            assetMimetype,
                                                            assetBirthtime,
-                                                           config.author,
-                                                           config.license);
+                                                           config.author);
       console.log("Asset Tree is from initial registration\n");
     } else {
       console.log("Asset Tree is from latest commit\n");
@@ -443,11 +440,6 @@ async function main() {
 
     let assetTreeUpdates: any = {};
     // Check and set up license
-    if (config.license == "custom") {
-      assetTreeUpdates.license = JSON.parse(config.licenseContent);
-    } else {
-      assetTreeUpdates.license = license.Licenses[config.license];
-    }
 
     if ("message" in args.params) {
       assetTreeUpdates.abstract = args.params["message"];
@@ -458,6 +450,16 @@ async function main() {
     if ("integrity-cid" in args.params) {
       assetTreeUpdates.integrityCid= args.params["integrity-cid"];
     }
+    if (license.isSupportedLicense(args.params.license)) {
+      assetTreeUpdates.license = license.Licenses[args.params.license];
+    } else {
+      console.error(`Get unsupported or default license: ${args.params.license}\n`);
+    }
+    // Custom license will override default or specified license
+    if ("custom-license" in args.params) {
+      assetTreeUpdates.license = JSON.parse(args.params["custom-license"]);
+    }
+
     console.log(`Current Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
     console.log(`Current Asset Tree Updates: ${JSON.stringify(assetTreeUpdates, null, 2)}\n`);
 

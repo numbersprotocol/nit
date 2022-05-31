@@ -21,11 +21,6 @@ export const nitconfigTemplate = {
   "committer": "a".repeat(cidv1Length),
   /* Provider's Identity CID. */
   "provider": "a".repeat(cidv1Length),
-  "license": "cc-by-nc",
-  "licenseContent": {
-    "name": "",
-    "document": ""
-  },
   /* Which network config you want to use.
      One of the network names in the "network" section below.
      E.g., rinkeby */
