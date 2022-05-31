@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import fs = require("fs");
 
 import * as action from "./action";
 import * as integrityContract from "./contract";
@@ -86,11 +85,6 @@ export async function loadBlockchain(config) {
   };
 }
 
-// FIXME: Remove this design because developers need to remember
-//        updating the staging status at any necessary place.
-//        Developers will make mistakes easily.
-let stagingCommit: any = {};
-
 const configurableAssetTreeKeys = [
   "assetCreator",
   "assetTimestampCreated",
@@ -119,12 +113,11 @@ async function createAssetTreeBase(assetByes, assetMimetype) {
 }
 
 async function createCommitBase(signer, assetTree, authorCid, committerCid, providerCid) {
-  stagingCommit = {};
+  let stagingCommit: any = {};
 
   const assetTreeBytes = Buffer.from(JSON.stringify(assetTree, null, 2));
   stagingCommit.assetTreeCid = await ipfs.infuraIpfsAddBytes(assetTreeBytes);
   stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(assetTree, null, 2)))).substring(2);
-  console.log(`createCommitBase: Asset Tree: ${JSON.stringify(assetTree, null, 2)}\n`);
   // remove leading 0x to as the same as most sha256 tools
   stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
   stagingCommit.author = authorCid;
@@ -150,7 +143,7 @@ export async function createAssetTreeInitialRegister(assetBytes,
 }
 
 export async function createCommitInitialRegister(signer, assetTree, authorCid, committerCid, providerCid) {
-  stagingCommit = await createCommitBase(signer, assetTree, authorCid, committerCid, providerCid);
+  let stagingCommit = await createCommitBase(signer, assetTree, authorCid, committerCid, providerCid);
   stagingCommit.action = action.Actions["action-initial-registration"];
   stagingCommit.actionResult = `https://${stagingCommit.assetTreeCid}.ipfs.dweb.link`;
   stagingCommit.abstract = "Action action-initial-registration.";
@@ -159,7 +152,7 @@ export async function createCommitInitialRegister(signer, assetTree, authorCid, 
 }
 
 export async function createCommit(signer, assetTree, authorCid, committerCid, providerCid) {
-  stagingCommit = await createCommitBase(signer, assetTree, authorCid, committerCid, providerCid);
+  let stagingCommit = await createCommitBase(signer, assetTree, authorCid, committerCid, providerCid);
   stagingCommit.action = "";
   stagingCommit.actionResult = "";
   stagingCommit.abstract = `Nit Commit created by ${signer.address}.`;
