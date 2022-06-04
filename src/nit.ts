@@ -98,12 +98,25 @@ const configurableAssetTreeKeys = [
 /*----------------------------------------------------------------------------
  * Commands
  *----------------------------------------------------------------------------*/
-async function createAssetTreeBase(assetByes, assetMimetype) {
+async function createAssetTreeBaseRemote(assetByes, assetMimetype) {
   let stagingAssetTree: any = {};
   try {
     stagingAssetTree.assetCid = await ipfs.infuraIpfsAddBytes(assetByes);
     // remove leading 0x to as the same as most sha256 tools
     stagingAssetTree.assetSha256 = (await ethers.utils.sha256(assetByes)).substring(2);
+    stagingAssetTree.encodingFormat = assetMimetype;
+  } catch(error) {
+    console.error(`${error}`);
+    stagingAssetTree = {};
+  }
+  return stagingAssetTree;
+}
+
+async function createAssetTreeBase(assetCid, assetSha256, assetMimetype) {
+  let stagingAssetTree: any = {};
+  try {
+    stagingAssetTree.assetCid = assetCid;
+    stagingAssetTree.assetSha256 = assetSha256
     stagingAssetTree.encodingFormat = assetMimetype;
   } catch(error) {
     console.error(`${error}`);
@@ -128,13 +141,28 @@ async function createCommitBase(signer, assetTree, authorCid, committerCid, prov
   return stagingCommit;
 }
 
-export async function createAssetTreeInitialRegister(assetBytes,
+export async function createAssetTreeInitialRegisterRemote(assetBytes,
+                                                           assetMimetype,
+                                                           assetTimestampCreated,
+                                                           assetCreatorCid,
+                                                           assetLicense="cc-by-nc",
+                                                           assetAbstract="") {
+  let stagingAssetTree = await createAssetTreeBaseRemote(assetBytes, assetMimetype);
+  stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
+  stagingAssetTree.assetCreator = assetCreatorCid;
+  stagingAssetTree.license = license.Licenses[assetLicense];
+  stagingAssetTree.abstract = assetAbstract;
+  return stagingAssetTree;
+}
+
+export async function createAssetTreeInitialRegister(assetCid,
+                                                     assetSha256,
                                                      assetMimetype,
                                                      assetTimestampCreated,
                                                      assetCreatorCid,
                                                      assetLicense="cc-by-nc",
                                                      assetAbstract="") {
-  let stagingAssetTree = await createAssetTreeBase(assetBytes, assetMimetype);
+  let stagingAssetTree = await createAssetTreeBase(assetCid, assetSha256, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreatorCid;
   stagingAssetTree.license = license.Licenses[assetLicense];

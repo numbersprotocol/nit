@@ -436,10 +436,10 @@ async function main() {
       //const assetMimetype = await getMimetypeFromBytes(assetBytes);
       //const assetBirthtime = Math.floor(Date.now() / 1000);
 
-      assetTree = await nit.createAssetTreeInitialRegister(assetBytes,
-                                                           assetMimetype,
-                                                           assetBirthtime,
-                                                           config.author);
+      assetTree = await nit.createAssetTreeInitialRegisterRemote(assetBytes,
+                                                                 assetMimetype,
+                                                                 assetBirthtime,
+                                                                 config.author);
       console.log("Asset Tree is from initial registration\n");
     } else {
       console.log("Asset Tree is from latest commit\n");
