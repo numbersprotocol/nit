@@ -80,6 +80,7 @@ export async function loadBlockchain(config) {
     "contract": contract,
     "signer": signer,
     "gasLimit": networkConfig.gasLimit,
+    "gasPrice": networkConfig.gasPrice ? networkConfig.gasPrice : null,
     "explorerBaseUrl": networkConfig.explorerBaseUrl,
     "provider": provider
   };
@@ -247,17 +248,23 @@ export async function pull(assetCid: string, blockchainInfo) {
 //}
 
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
-  const r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
+  let r;
+  if (blockchainInfo.gasPrice != null) {
+    console.log(`Gas Price: ${blockchainInfo.gasPrice} Wei`);
+    r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit, gasPrice: blockchainInfo.gasPrice });
+  } else {
+    r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
+  }
   return r;
 }
 
 export async function log(assetCid: string, blockchainInfo) {
   const network = await blockchainInfo.provider.getNetwork();
-  if (network.chainId === 4) {
+  if (network.chainId === 4 || network.chainId === 1313161555) {
     // Ethereum Rinkeby
     await eventLogRangeQuery(assetCid, blockchainInfo);
-  } else if (network.chainId === 43113) {
-    // Avalanche Fuji
+  } else if (network.chainId === 43113 || network.chainId === 43114) {
+    // Avalanche: 43114, Fuji: 43113
     await eventLogIteratingQuery(assetCid, blockchainInfo);
   } else {
     console.log(`Unknown chain ID ${network.chainId}`);
