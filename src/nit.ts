@@ -271,11 +271,11 @@ export async function log(assetCid: string, blockchainInfo) {
   }
 }
 
+/*
 export async function getLatestCommitBlock(assetCid, blockchainInfo) {
-  /* Returns
-   *   Commit Block Number: if Asset Cid has been registerd
-   *   null: if Asset Cid has NOT been registerd
-   */
+  // Returns
+  //   Commit Block Number: if Asset Cid has been registerd
+  //   null: if Asset Cid has NOT been registerd
   const commitBlockNumbers = await blockchainInfo.contract.getCommits(assetCid);
   if (commitBlockNumbers.length > 0) {
     return commitBlockNumbers[commitBlockNumbers.length - 1].toNumber();
@@ -284,8 +284,18 @@ export async function getLatestCommitBlock(assetCid, blockchainInfo) {
     return null;
   }
 }
+*/
 
 export async function getLatestCommitSummary(assetCid, blockchainInfo) {
+  const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+  const commitAmount = commitBlockNumbers.length;
+  const events = await iterateCommitEvents(assetCid, blockchainInfo, commitAmount - 1, commitAmount);
+  const commitsSummary = await getCommitsSummary(events);
+  return commitsSummary.pop();
+}
+
+/*
+export async function _getLatestCommitSummary(assetCid, blockchainInfo) {
   const commitBlockNumber = await getLatestCommitBlock(assetCid, blockchainInfo);
   let filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
   filter.fromBlock = commitBlockNumber;
@@ -314,21 +324,8 @@ export async function getLatestCommitSummary(assetCid, blockchainInfo) {
     console.log(`ERROR: eventLogs.length: ${eventLogs.length}`);
     return null
   }
-
-  /*
-  let events = await blockchainInfo.contract.queryFilter(filter, commitBlockNumber, commitBlockNumber);
-  if (events.length === 1) {
-    const commitDataIndex = 2;
-    return {
-      "blockNumber": commitBlockNumber,
-      "commit": JSON.parse(events[0].args![commitDataIndex])
-    }
-  } else {
-    // Asset has not been registered
-    return null;
-  }
-  */
 }
+*/
 
 export async function getAssetTree(assetTreeCid) {
   const assetTreeBytes = await ipfs.infuraIpfsCat(assetTreeCid);
@@ -336,20 +333,105 @@ export async function getAssetTree(assetTreeCid) {
   return assetTree;
 }
 
+export async function getCommitBlockNumbers(assetCid: string, blockchainInfo) {
+  const commits = await blockchainInfo.contract.getCommits(assetCid);
+  return commits.length > 0 ? commits.map(element => element.toNumber()) : [];
+}
+
+export async function filterCommitEvents(assetCid: string, blockchainInfo, fromIndex, toIndex) {
+  /* Have 3 more keys than eventLog in iterateCommitEvents: event, eventSignature, args
+   *
+   * keys:
+   *   blockNumber, blockHash, transactionIndex, removed, address, data, topics
+   *   transactionHash, logIndex, event, eventSignature, args
+   */
+  const commitBlockNumbers = (await getCommitBlockNumbers(assetCid, blockchainInfo)).slice(fromIndex, toIndex);
+  const commitAmount = commitBlockNumbers.length;
+
+  if (commitAmount == 0) { return []; }
+
+  const filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
+  filter.fromBlock = commitBlockNumbers[0];
+  filter.toBlock = commitBlockNumbers[commitAmount - 1];
+
+  let events = await blockchainInfo.contract.queryFilter(filter, filter.fromBlock, filter.toBlock);
+  return events;
+}
+
+export async function iterateCommitEvents(assetCid: string, blockchainInfo, fromIndex, toIndex) {
+  /* Get Commit events by using low-level event logs.
+   *
+   * If a blockchain provider does not support getting events by filter,
+   * (e.g., Avalanche), you can use this function.
+   *
+   * keys in eventLog:
+   *   blockNumber, blockHash, transactionIndex, removed, address, data, topics
+   *   transactionHash, logIndex,
+   * keys in commitEvent:
+   *   eventFragment, name, signature, args, topic, args
+   */
+  const commitBlockNumbers = (await getCommitBlockNumbers(assetCid, blockchainInfo)).slice(fromIndex, toIndex);
+  const commitAmount = commitBlockNumbers.length;
+
+  if (commitAmount == 0) { return []; }
+
+  const filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
+  const abi = [
+    "event Commit(address indexed recorder, string indexed assetCid, string commitData)"
+  ];
+  const commitEventInterface = new ethers.utils.Interface(abi);
+
+  let events = [];
+
+  for (const c of commitBlockNumbers) {
+    filter.fromBlock = c;
+    filter.toBlock = c;
+    const eventLogs = await blockchainInfo.provider.getLogs(filter);
+
+    for (const eventLog of eventLogs) {
+      const commitEvent = commitEventInterface.parseLog(eventLog);
+      // merge eventLog and commitEvent
+      events.push(Object.assign({}, eventLog, commitEvent));
+    }
+  }
+
+  return events;
+}
+
+export async function getCommits(events) {
+  const commitDataIndex = 2;
+  const commits = events.map(element => JSON.parse(element.args[commitDataIndex]));
+  return commits;
+}
+
+export async function getCommitsSummary(events) {
+  const commitDataIndex = 2;
+  const commitsSummary = events.map(element => {
+    let summary = { blockNumber: 0, txHash: "", commit: {} };
+    summary.commit = JSON.parse(element.args[commitDataIndex]);
+    summary.blockNumber = element.blockNumber;
+    summary.txHash = element.transactionHash;
+    return summary;
+  });
+  return commitsSummary;
+}
+
 async function eventLogRangeQuery(assetCid: string, blockchainInfo) {
   console.log(`Commit logs of assetCid: ${assetCid}`);
-  const commits = await blockchainInfo.contract.getCommits(assetCid);
-  console.log(`Commit block numbers (${commits.length}):`);
-  if (commits.length > 0) {
-    console.log(`${commits.map(this.toString)}`);
+
+  const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+  const commitAmount = commitBlockNumbers.length;
+  console.log(`Commit block numbers (${commitBlockNumbers.length}):`);
+  if (commitAmount > 0) {
+    console.log(`${JSON.stringify(commitBlockNumbers)}`);
   } else {
     return;
   }
 
   // Get events
   const filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
-  filter.fromBlock = commits[0].toNumber();
-  filter.toBlock = commits[commits.length - 1].toNumber();
+  filter.fromBlock = commitBlockNumbers[0];
+  filter.toBlock = commitBlockNumbers[commitAmount - 1];
   let events = await blockchainInfo.contract.queryFilter(filter, filter.fromBlock, filter.toBlock);
   const commitDataIndex = 2;
   for (const event of events) {
@@ -361,12 +443,12 @@ async function eventLogRangeQuery(assetCid: string, blockchainInfo) {
 
 async function eventLogIteratingQuery(assetCid: string, blockchainInfo) {
   console.log(`assetCid: ${assetCid}`);
-  const commits = await blockchainInfo.contract.getCommits(assetCid);
-  console.log(`Commit block numbers (${commits.length}):`);
-  if (commits.length > 0) {
-    for (const c of commits) {
-      console.log(`\t${c.toString()}`);
-    }
+
+  const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+  const commitAmount = commitBlockNumbers.length;
+  console.log(`Commit block numbers (${commitBlockNumbers.length}):`);
+  if (commitAmount > 0) {
+    console.log(`${JSON.stringify(commitBlockNumbers)}`);
   } else {
     return;
   }
@@ -383,10 +465,10 @@ async function eventLogIteratingQuery(assetCid: string, blockchainInfo) {
     "event Commit(address indexed recorder, string indexed assetCid, string commitData)"
   ];
   console.log(`Filter: ${JSON.stringify(filter, null, 2)}`);
-  for (const c of commits) {
+  for (const c of commitBlockNumbers) {
     // Get event log by filter
-    filter.fromBlock = c.toNumber();
-    filter.toBlock = c.toNumber();
+    filter.fromBlock = c;
+    filter.toBlock = c;
     const eventLogs = await blockchainInfo.provider.getLogs(filter);
 
     const commitEventInterface = new ethers.utils.Interface(abi);
