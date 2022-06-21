@@ -271,21 +271,6 @@ export async function log(assetCid: string, blockchainInfo) {
   }
 }
 
-/*
-export async function getLatestCommitBlock(assetCid, blockchainInfo) {
-  // Returns
-  //   Commit Block Number: if Asset Cid has been registerd
-  //   null: if Asset Cid has NOT been registerd
-  const commitBlockNumbers = await blockchainInfo.contract.getCommits(assetCid);
-  if (commitBlockNumbers.length > 0) {
-    return commitBlockNumbers[commitBlockNumbers.length - 1].toNumber();
-  } else {
-    // Asset CID has not been registered
-    return null;
-  }
-}
-*/
-
 export async function getLatestCommitSummary(assetCid, blockchainInfo) {
   const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
   const commitAmount = commitBlockNumbers.length;
@@ -293,39 +278,6 @@ export async function getLatestCommitSummary(assetCid, blockchainInfo) {
   const commitsSummary = await getCommitsSummary(events);
   return commitsSummary.pop();
 }
-
-/*
-export async function _getLatestCommitSummary(assetCid, blockchainInfo) {
-  const commitBlockNumber = await getLatestCommitBlock(assetCid, blockchainInfo);
-  let filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
-  filter.fromBlock = commitBlockNumber;
-  filter.toBlock = commitBlockNumber;
-  const eventLogs = await blockchainInfo.provider.getLogs(filter);
-  const abi = [
-    "event Commit(address indexed recorder, string indexed assetCid, string commitData)"
-  ];
-  const commitEventInterface = new ethers.utils.Interface(abi);
-
-  if (eventLogs.length === 1) {
-    const commitEvent = commitEventInterface.parseLog(eventLogs[0]);
-    try {
-      const commitDataIndex = 2;
-      const commitData = JSON.parse(commitEvent.args[commitDataIndex]);
-      return {
-        "blockNumber": eventLogs[0].blockNumber,
-        "txHash": eventLogs[0].transactionHash,
-        "commit": commitData,
-      }
-    } catch (error) {
-      console.error(`Failed to parse Commit, error: ${error}`);
-      return null
-    }
-  } else {
-    console.log(`ERROR: eventLogs.length: ${eventLogs.length}`);
-    return null
-  }
-}
-*/
 
 export async function getAssetTree(assetTreeCid) {
   const assetTreeBytes = await ipfs.infuraIpfsCat(assetTreeCid);
