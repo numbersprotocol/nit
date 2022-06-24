@@ -9,9 +9,11 @@
   "dependencies": {
     "@types/mime-types": "^2.1.1",
     "axios": "^0.26.0",
+    "colors": "^1.4.0",
     "command-line-args": "^5.2.1",
     "command-line-usage": "^6.1.1",
     "crypto-js": "^4.1.1",
+    "diff": "^5.1.0",
     "ethers": "^5.5.4",
     "form-data": "^4.0.0",
     "got": "^11.8.2",

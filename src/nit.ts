@@ -6,6 +6,11 @@ import * as ipfs from "./ipfs";
 import * as license from "./license";
 import * as util from "./util";
 
+import * as colors from "colors";
+import * as diff from "diff";
+
+colors.enable();
+
 /*----------------------------------------------------------------------------
  * Configuration
  *----------------------------------------------------------------------------*/
@@ -278,6 +283,24 @@ export async function log(assetCid: string, blockchainInfo, fromIndex, toIndex) 
   }
 }
 
+export async function showCommmitDiff(commitDiff) {
+  commitDiff.forEach((part) => {
+    const color = part.added ? 'green' : part.removed ? 'red' : 'grey';
+    console.log(`${part.value.replace(/\n$/, "")[color]}`);
+  });
+}
+
+export async function show(assetCid: string, blockchainInfo) {
+  const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+  const commitAmount = commitBlockNumbers.length;
+  console.log(`${commitAmount} Commits`);
+
+  const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, commitAmount - 2, commitAmount);
+  const commits = await getCommits(commitEvents);
+  const commitDiff = diff.diffJson(commits[0], commits[1]);
+  return commitDiff;
+}
+
 export async function getLatestCommitSummary(assetCid, blockchainInfo) {
   const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
   const commitAmount = commitBlockNumbers.length;
@@ -413,6 +436,8 @@ async function eventLogRangeQuery(assetCid: string, blockchainInfo) {
   }
 }
 
+/* TODO: Remove this function in the next feature release.
+ */
 async function eventLogIteratingQuery(assetCid: string, blockchainInfo) {
   console.log(`assetCid: ${assetCid}`);
 
