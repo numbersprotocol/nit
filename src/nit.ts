@@ -258,14 +258,21 @@ export async function commit(assetCid: string, commitData: string, blockchainInf
   return r;
 }
 
-export async function log(assetCid: string, blockchainInfo) {
+export async function log(assetCid: string, blockchainInfo, fromIndex, toIndex) {
   const network = await blockchainInfo.provider.getNetwork();
   if (network.chainId === 4 || network.chainId === 1313161555) {
     // Ethereum Rinkeby
     await eventLogRangeQuery(assetCid, blockchainInfo);
   } else if (network.chainId === 43113 || network.chainId === 43114) {
     // Avalanche: 43114, Fuji: 43113
-    await eventLogIteratingQuery(assetCid, blockchainInfo);
+    //await eventLogIteratingQuery(assetCid, blockchainInfo);
+    const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+    const commitAmount = commitBlockNumbers.length;
+    console.log(`${commitAmount} Commits`);
+
+    const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, fromIndex < toIndex ? toIndex : fromIndex + 1);
+    const commits = await getCommits(commitEvents);
+    commits.map(commit => console.log(`${JSON.stringify(commit)}`));
   } else {
     console.log(`Unknown chain ID ${network.chainId}`);
   }
@@ -352,7 +359,20 @@ export async function iterateCommitEvents(assetCid: string, blockchainInfo, from
 
 export async function getCommits(events) {
   const commitDataIndex = 2;
-  const commits = events.map(element => JSON.parse(element.args[commitDataIndex]));
+  const commits = events.map(event => {
+    let commit;
+    try {
+        commit = JSON.parse(event.args[commitDataIndex]);
+    } catch (error) {
+        console.error(`Cannot get valid Commit from block ${event.blockNumber}`);
+        commit = {};
+    }
+    return {
+      "blockNumber": event.blockNumber,
+      "transactionHash": event.transactionHash,
+      "commit": commit,
+    };
+  });
   return commits;
 }
 

@@ -299,14 +299,15 @@ async function parseArgs() {
   } else if (commandOptions.command === "log") {
     const paramDefinitions = [
       { name: "asset-cid", defaultOption: true },
+      { name: "blocks", alias: "b" },
+      { name: "from-index", alias: "f", defaultValue: 0 },
+      { name: "to-index", alias: "t", defaultValue: null },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
                                          { argv, stopAtFirstUnknown: true });
     return {
       "command": "log",
-      "params": {
-        "asset-cid": paramOptions["asset-cid"],
-      }
+      "params": paramOptions
     }
   } else if (commandOptions.command === "config") {
     const paramDefinitions = [
@@ -555,7 +556,13 @@ async function main() {
     console.log(`Signer address: ${signerAddress}`);
   } else if (args.command === "log") {
     if ("asset-cid" in args.params) {
-      await nit.log(args.params["asset-cid"], blockchain);
+      if ("blocks" in args.params) {
+        const commitBlockNumbers = await nit.getCommitBlockNumbers(args.params["asset-cid"], blockchain);
+        console.log(`${commitBlockNumbers.length} Commits`);
+        console.log(`${JSON.stringify(commitBlockNumbers)}`);
+      } else {
+        await nit.log(args.params["asset-cid"], blockchain, args.params["from-index"], args.params["to-index"]);
+      }
     } else {
       await help();
     }
