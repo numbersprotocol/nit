@@ -290,14 +290,32 @@ export async function showCommmitDiff(commitDiff) {
   });
 }
 
-export async function show(assetCid: string, blockchainInfo) {
+export async function difference(assetCid: string, blockchainInfo, fromIndex: number = null, toIndex: number = null) {
   const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
   const commitAmount = commitBlockNumbers.length;
-  console.log(`${commitAmount} Commits`);
 
-  const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, commitAmount - 2, commitAmount);
+  // show the Commit diff between (latest - 1, latest)
+  if (fromIndex == null) {
+    toIndex = commitAmount;
+    fromIndex = toIndex - 2;
+  }
+
+  const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, fromIndex < toIndex ? toIndex : fromIndex + 1);
   const commits = await getCommits(commitEvents);
-  const commitDiff = diff.diffJson(commits[0], commits[1]);
+  const fromCommit = commits[0];
+  const toCommit = commits[commits.length - 1];
+  const fromAssetTree = JSON.parse((await ipfs.infuraIpfsCat(fromCommit.commit.assetTreeCid)).toString());
+  const toAssetTree = JSON.parse((await ipfs.infuraIpfsCat(toCommit.commit.assetTreeCid)).toString());
+  const commitDiff = {
+    "fromIndex": fromIndex,
+    "fromBlockNumber": fromCommit.blockNumber,
+    "fromTransactionHash": fromCommit.transactionHash,
+    "toIndex": toIndex,
+    "toBlockNumber": toCommit.blockNumber,
+    "toTransactionHash": toCommit.transactionHash,
+    "commitDiff": diff.diffJson(fromCommit.commit, toCommit.commit),
+    "assetTreeDiff": diff.diffJson(fromAssetTree, toAssetTree),
+  }
   return commitDiff;
 }
 

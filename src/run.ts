@@ -115,6 +115,7 @@ async function help() {
         "commit    Generate and register commit to web3",
         "verify    Verify integrity signature",
         "log       Show asset's commits",
+        "diff      Show diff between two commits",
         "help      Show this usage tips",
       ]
     },
@@ -307,6 +308,18 @@ async function parseArgs() {
                                          { argv, stopAtFirstUnknown: true });
     return {
       "command": "log",
+      "params": paramOptions
+    }
+  } else if (commandOptions.command === "diff") {
+    const paramDefinitions = [
+      { name: "asset-cid", defaultOption: true },
+      { name: "from-index", alias: "f", defaultValue: null },
+      { name: "to-index", alias: "t", defaultValue: null },
+    ];
+    const paramOptions = commandLineArgs(paramDefinitions,
+                                         { argv, stopAtFirstUnknown: true });
+    return {
+      "command": "diff",
       "params": paramOptions
     }
   } else if (commandOptions.command === "config") {
@@ -563,6 +576,20 @@ async function main() {
       } else {
         await nit.log(args.params["asset-cid"], blockchain, args.params["from-index"], args.params["to-index"]);
       }
+    } else {
+      await help();
+    }
+  } else if (args.command === "diff") {
+    if ("asset-cid" in args.params) {
+      const diff = await nit.difference(args.params["asset-cid"], blockchain, args.params["from-index"], args.params["to-index"]);
+      console.log(`from: block ${diff.fromBlockNumber}, tx ${diff.fromTransactionHash}`);
+      console.log(`  to: block ${diff.toBlockNumber}, tx ${diff.toTransactionHash}`);
+
+      console.log("\nCommit difference");
+      await nit.showCommmitDiff(diff.commitDiff);
+
+      console.log("\nAsset Tree difference");
+      await nit.showCommmitDiff(diff.assetTreeDiff);
     } else {
       await help();
     }
