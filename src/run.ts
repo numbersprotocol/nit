@@ -9,6 +9,7 @@ import mime = require("mime-types");
 import sha256 = require("crypto-js/sha256");
 
 import got from "got";
+import * as colors from "colors";
 
 import * as action from "./action";
 import * as ipfs from "./ipfs";
@@ -16,6 +17,8 @@ import * as license from "./license";
 import * as nit from "./nit";
 
 const launch = require("launch-editor");
+
+colors.enable();
 
 /*----------------------------------------------------------------------------
  * Configuration
@@ -205,6 +208,40 @@ async function help() {
       header: 'log',
       content: [
         "$ nit log {underline assetCid}",
+        "$ nit log {underline assetCid} --blocks",
+        "$ nit log {underline assetCid} --from-index|-f {underline blockNumberIndex}",
+        "$ nit log {underline assetCid} --from-index|-f {underline blockNumberIndex} --to-index|-t {underline blockNumberIndex}",
+      ]
+    },
+    {
+      header: 'log options',
+      optionList: [
+        {
+          "name": "blocks",
+          "description": 'Return block numbers of Commits and their indices in the block number array.',
+          "alias": "b",
+          "typeLabel": "{underline bool}",
+        },
+        {
+          "name": "from-index",
+          "description": 'Get log starting from the block number related to this index. Range: [from, to)',
+          "alias": "f",
+          "typeLabel": "{underline blockNumberIndex}",
+        },
+        {
+          "name": "to-index",
+          "description": 'Get log ending before the block number related to this index. Range: [from, to)',
+          "alias": "t",
+          "typeLabel": "{underline blockNumberIndex}",
+        },
+      ]
+    },
+    {
+      header: 'diff',
+      content: [
+        "$ nit diff {underline assetCid}",
+        "$ nit diff {underline assetCid} --from|-f {underline blockNumberIndex}",
+        "$ nit diff {underline assetCid} --from|-f {underline blockNumberIndex} --to|-t {underline blockNumberIndex}",
       ]
     },
   ]
@@ -302,7 +339,7 @@ async function parseArgs() {
       { name: "asset-cid", defaultOption: true },
       { name: "blocks", alias: "b" },
       { name: "from-index", alias: "f", defaultValue: 0 },
-      { name: "to-index", alias: "t", defaultValue: null },
+      { name: "to-index", alias: "t", defaultValue: -1 },
     ];
     const paramOptions = commandLineArgs(paramDefinitions,
                                          { argv, stopAtFirstUnknown: true });
@@ -569,12 +606,13 @@ async function main() {
     console.log(`Signer address: ${signerAddress}`);
   } else if (args.command === "log") {
     if ("asset-cid" in args.params) {
+      const commitBlockNumbers = await nit.getCommitBlockNumbers(args.params["asset-cid"], blockchain);
+      console.log(`Total Commit number: ${colors.cyan(commitBlockNumbers.length)}`);
       if ("blocks" in args.params) {
-        const commitBlockNumbers = await nit.getCommitBlockNumbers(args.params["asset-cid"], blockchain);
-        console.log(`${commitBlockNumbers.length} Commits`);
-        console.log(`${JSON.stringify(commitBlockNumbers)}`);
+        commitBlockNumbers.map((number, index) => { console.log(`Index: ${index}, Block number: ${number}`); });
+        //console.log(`${JSON.stringify(commitBlockNumbers)}`);
       } else {
-        await nit.log(args.params["asset-cid"], blockchain, args.params["from-index"], args.params["to-index"]);
+        await nit.log(args.params["asset-cid"], blockchain, parseInt(args.params["from-index"]), parseInt(args.params["to-index"]));
       }
     } else {
       await help();

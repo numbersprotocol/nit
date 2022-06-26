@@ -263,21 +263,27 @@ export async function commit(assetCid: string, commitData: string, blockchainInf
   return r;
 }
 
-export async function log(assetCid: string, blockchainInfo, fromIndex, toIndex) {
+export async function log(assetCid: string, blockchainInfo, fromIndex: number, toIndex: number = null) {
   const network = await blockchainInfo.provider.getNetwork();
   if (network.chainId === 4 || network.chainId === 1313161555) {
     // Ethereum Rinkeby
     await eventLogRangeQuery(assetCid, blockchainInfo);
   } else if (network.chainId === 43113 || network.chainId === 43114) {
     // Avalanche: 43114, Fuji: 43113
-    //await eventLogIteratingQuery(assetCid, blockchainInfo);
-    const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
-    const commitAmount = commitBlockNumbers.length;
-    console.log(`${commitAmount} Commits`);
 
-    const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, fromIndex < toIndex ? toIndex : fromIndex + 1);
+    if (toIndex <= fromIndex) {
+      const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+      const commitAmount: number = commitBlockNumbers.length;
+      toIndex = commitAmount;
+    }
+
+    const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, toIndex);
     const commits = await getCommits(commitEvents);
-    commits.map(commit => console.log(`${JSON.stringify(commit)}`));
+    commits.map(commit => {
+      console.log(`\nblock number: ${colors.blue(commit.blockNumber)}`);
+      console.log(`tx: ${colors.green(commit.transactionHash)}`);
+      console.log(`${JSON.stringify(commit.commit, null, 2)}`);
+    });
   } else {
     console.log(`Unknown chain ID ${network.chainId}`);
   }
