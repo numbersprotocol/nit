@@ -60,7 +60,7 @@ async function writeConfig(configData: Object) {
 /*----------------------------------------------------------------------------
  * I/O
  *----------------------------------------------------------------------------*/
-async function stage(assetCid, stagedAssetTree, stagedCommit) {
+async function stage(assetCid, stagedAssetTree, stagedCommit, baseCommit) {
   // Create staged dir whose name is assetCid
   const commitDir = `${workingDir}/${assetCid}`;
   if (fs.existsSync(commitDir) === false) {
@@ -69,6 +69,7 @@ async function stage(assetCid, stagedAssetTree, stagedCommit) {
 
   fs.writeFileSync(`${commitDir}/assetTree.json`, JSON.stringify(stagedAssetTree, null, 2));
   fs.writeFileSync(`${commitDir}/commit.json`, JSON.stringify(stagedCommit, null, 2));
+  fs.writeFileSync(`${commitDir}/baseCommit.json`, JSON.stringify(baseCommit ,null,2));
   await setWorkingAssetCid(assetCid);
 }
 
@@ -533,7 +534,9 @@ async function main() {
       console.log(`Current Commit: ${JSON.stringify(commit, null, 2)}\n`);
 
       // Stage
-      await stage(updatedAssetTree.assetCid, updatedAssetTree, commit);
+      const baseCommitSummary = await nit.getLatestCommitSummary(updatedAssetTree.assetCid, blockchain);
+      const baseCommit = baseCommitSummary.blockNumber;
+      await stage(updatedAssetTree.assetCid, updatedAssetTree, commit, baseCommit);
     } else {
       console.error("No update and skip this command");
     }
@@ -565,28 +568,36 @@ async function main() {
     console.log(`Asset Cid (index): ${assetCid}`);
     console.log(`Commit: ${JSON.stringify(commitData, null, 2)}`);
 
-    if ("dry-run" in args.params === false) {
-      console.debug(`Committing...`);
-      console.log([
-        "Contract Information",
-        `Signer wallet address: ${blockchain.signer.address}`,
-        `Contract address: ${blockchain.contract.address}`,
-      ]);
-
-      let commitResult;
-      if ("mockup" in args.params === false) {
-        commitResult = await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
-      } else {
-        commitResult = await nit.commit(nit.assetCidMock, JSON.stringify(commitData), blockchain);
-      }
-
-      console.log(`Commit Tx: ${commitResult.hash}`);
-      console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
-
-      // Reset stage
-      await setWorkingAssetCid("");
+    const currentLastBlockSummary = await nit.getLatestCommitSummary(assetCid, blockchain);
+    const currentLastBlock = currentLastBlockSummary.blockNumber;
+    const commitDir = `${workingDir}/${assetCid}`;
+    const lastBlockWhenAdding = JSON.parse(fs.readFileSync(`${commitDir}/baseCommit.json`, "utf-8"));
+    if (currentLastBlock != lastBlockWhenAdding) {
+      console.log("Conflict! Merge is needed");
     } else {
-      console.log("This is dry run and Nit does not register this commit to blockchain.");
+      if ("dry-run" in args.params === false) {
+        console.debug(`Committing...`);
+        console.log([
+          "Contract Information",
+          `Signer wallet address: ${blockchain.signer.address}`,
+          `Contract address: ${blockchain.contract.address}`,
+        ]);
+
+        let commitResult;
+        if ("mockup" in args.params === false) {
+          commitResult = await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
+        } else {
+          commitResult = await nit.commit(nit.assetCidMock, JSON.stringify(commitData), blockchain);
+        }
+
+        console.log(`Commit Tx: ${commitResult.hash}`);
+        console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
+
+        // Reset stage
+        await setWorkingAssetCid("");
+      } else {
+        console.log("This is dry run and Nit does not register this commit to blockchain.");
+      }
     }
   } else if (args.command === "status") {
     const workingAssetCid = await getWorkingAssetCid();
