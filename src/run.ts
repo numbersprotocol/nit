@@ -29,7 +29,7 @@ const workingDir = `.nit`;
 async function setWorkingAssetCid(assetCid: string) {
   if (fs.existsSync(`${workingDir}`) === false) {
     console.log(`Create working dir ${workingDir}`);
-    fs.mkdirSync(`${workingDir}`);
+    fs.mkdirSync(`${workingDir}`, { recursive: true });
   } else {
     // working dir exists
   }
@@ -64,7 +64,7 @@ async function stage(assetCid, stagedAssetTree, stagedCommit) {
   // Create staged dir whose name is assetCid
   const commitDir = `${workingDir}/${assetCid}`;
   if (fs.existsSync(commitDir) === false) {
-    fs.mkdirSync(commitDir);
+    fs.mkdirSync(commitDir, { recursive: true });
   } else {}
 
   fs.writeFileSync(`${commitDir}/assetTree.json`, JSON.stringify(stagedAssetTree, null, 2));
@@ -438,7 +438,7 @@ async function main() {
     // Create commit dir whose name is assetCid
     const commitDir = `${workingDir}/${assetTree.assetCid}`;
     if (fs.existsSync(commitDir) === false) {
-      fs.mkdirSync(commitDir);
+      fs.mkdirSync(commitDir, { recursive: true });
     } else {}
 
     // Create staged assetTree file
