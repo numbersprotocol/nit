@@ -35,6 +35,7 @@ export const nitconfigTemplate = {
          If you are using RPC provider service like Alchemy or Infura,
          put the URL and API key here. */
       "url": "https://eth-rinkeby.alchemyapi.io/v2/{API_KEY}",
+      "chainId": 4,
       /* Gas units consumed by a commit. */
       "gasLimit": 200000,
       /* Private key(s) of the Commit Tx sender. */
@@ -47,6 +48,7 @@ export const nitconfigTemplate = {
     },
     "avalanche": {
       "url": "https://api.avax.network/ext/bc/C/rpc",
+      "chainId": 43113,
       "accounts": [
         "a".repeat(privateKeyLength)
       ],
@@ -55,6 +57,7 @@ export const nitconfigTemplate = {
     },
     "fuji": {
       "url": "https://api.avax-test.network/ext/bc/C/rpc",
+      "chainId": 43114,
       "gasLimit": 200000,
       "accounts": [
         "a".repeat(privateKeyLength),
@@ -68,6 +71,15 @@ export const nitconfigTemplate = {
     "projectId": "a".repeat(infuraSecretLength),
     "projectSecret": "a".repeat(infuraSecretLength)
   }
+};
+
+export const blockchainNames = {
+  1: "ethereum",
+  4: "rinkeby",
+  137: "polygon",
+  43113: "fuji",
+  43114: "avalanche",
+  80001: "mumbai",
 };
 
 export async function loadBlockchain(config) {
@@ -84,6 +96,7 @@ export async function loadBlockchain(config) {
   return {
     "contract": contract,
     "signer": signer,
+    "chainId": networkConfig.chainId,
     "gasLimit": networkConfig.gasLimit,
     "gasPrice": networkConfig.gasPrice ? networkConfig.gasPrice : null,
     "explorerBaseUrl": networkConfig.explorerBaseUrl,
@@ -279,14 +292,18 @@ export async function log(assetCid: string, blockchainInfo, fromIndex: number, t
 
     const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, toIndex);
     const commits = await getCommits(commitEvents);
-    commits.map(commit => {
-      console.log(`\nblock number: ${colors.blue(commit.blockNumber)}`);
-      console.log(`tx: ${colors.green(commit.transactionHash)}`);
-      console.log(`${JSON.stringify(commit.commit, null, 2)}`);
-    });
+    await showCommits(commits);
   } else {
     console.log(`Unknown chain ID ${network.chainId}`);
   }
+}
+
+export async function showCommits(commits) {
+  commits.map(commit => {
+    console.log(`\nblock number: ${colors.blue(commit.blockNumber)}`);
+    console.log(`tx: ${colors.green(commit.transactionHash)}`);
+    console.log(`${JSON.stringify(commit.commit, null, 2)}`);
+  });
 }
 
 export async function showCommmitDiff(commitDiff) {

@@ -53,3 +53,14 @@ export async function infuraIpfsCat(cid) {
   const r = await got.post(url, requestConfig);
   return r.rawBody;
 }
+
+export async function cidToJson(cid) {
+  let cidContentBytes;
+  try {
+    cidContentBytes = await infuraIpfsCat(cid);
+    return JSON.parse(cidContentBytes.toString());
+  } catch(error) {
+    console.error(`Failed to download content of CID ${cid}`);
+    return null;
+  }
+}

@@ -12,3 +12,12 @@ export function isSuperset(set: Set<string>, subset: Set<string>) {
 export function deepCopy(data) {
   return JSON.parse(JSON.stringify(data));
 }
+
+export function timestampToIsoString(timestamp): string {
+  try {
+    return new Date((parseInt(timestamp) * 1000)).toISOString()
+  } catch (error) {
+    console.log(`Invalid timestamp ${timestamp}. ${error}`);
+    return "";
+  }
+}
