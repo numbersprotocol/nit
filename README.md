@@ -4,7 +4,7 @@ Nit is git for web3 digital asset and helps user to commit an asset's activities
 
 ## Why Nit
 
-To make digital assets trustworthy and traceable, Nit leverages the web3 technologies and Git core concepts. Everyone can make pure records to be chronicle of the assets, so that we can debate, narrate, and analyse.
+To make digital assets trustworthy and traceable, Nit leverages the web3 technologies and Git core concepts. Everyone can chronicle their assets by creating on-chain records so that we can productively debate, narrate, and analyse.
 
 Case study
 
