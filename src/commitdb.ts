@@ -8,6 +8,7 @@ interface ExtendedCommit {
   blockNumber;
   transactionHash;
   commit;
+  assetCid;
   assetTree;
   author;
   committer;
@@ -31,6 +32,7 @@ async function extend(commitSummary, blockchainName) {
   const action = await ipfs.cidToJson(commit.action);
   const commitCreatedIsoTime = util.timestampToIsoString(commit.timestampCreated);
   const assetTree = await ipfs.cidToJson(commit.assetTreeCid);
+  const assetCid = assetTree.assetCid;
   const license = await ipfs.cidToJson(assetTree.provider);
   const integrity = await ipfs.cidToJson(assetTree.integrityCid);
   const assetCreatedIsoTime = util.timestampToIsoString(assetTree.assetTimestampCreated);
@@ -46,6 +48,7 @@ async function extend(commitSummary, blockchainName) {
     "action": action,
     "commitCreatedIsoTime": commitCreatedIsoTime,
     "assetTree": assetTree,
+    "assetCid": assetCid,
     "license": license,
     "integrity": integrity,
     "assetCreatedIsoTime": assetCreatedIsoTime,
