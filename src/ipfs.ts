@@ -54,11 +54,20 @@ export async function infuraIpfsCat(cid) {
   return r.rawBody;
 }
 
-export async function cidToJson(cid) {
-  let cidContentBytes;
+export async function cidToJsonString(cid) {
   try {
-    cidContentBytes = await infuraIpfsCat(cid);
-    return JSON.parse(cidContentBytes.toString());
+    const cidContentBytes = await infuraIpfsCat(cid);
+    return cidContentBytes.toString();
+  } catch(error) {
+    console.error(`Failed to download content of CID ${cid}`);
+    return null;
+  }
+}
+
+export async function cidToJson(cid) {
+  try {
+    const cidContentString = await cidToJsonString(cid);
+    return JSON.parse(cidContentString );
   } catch(error) {
     console.error(`Failed to download content of CID ${cid}`);
     return null;

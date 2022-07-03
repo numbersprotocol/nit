@@ -70,6 +70,9 @@ export const nitconfigTemplate = {
   "infura": {
     "projectId": "a".repeat(infuraSecretLength),
     "projectSecret": "a".repeat(infuraSecretLength)
+  },
+  "commitDatabase": {
+    "endpoint": ""
   }
 };
 

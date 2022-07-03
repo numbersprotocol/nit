@@ -24,18 +24,20 @@ interface ExtendedCommit {
 async function extend(commitSummary, blockchainName) {
   const blockNumber = commitSummary.blockNumber ;
   const transactionHash = commitSummary.transactionHash;
-  const commit = commitSummary.commit;
+  const commitObject = commitSummary.commit;
+  const commit = JSON.stringify(commitObject);
 
-  const author = await ipfs.cidToJson(commit.author);
-  const committer = await ipfs.cidToJson(commit.committer);
-  const provider = await ipfs.cidToJson(commit.provider);
-  const action = await ipfs.cidToJson(commit.action);
-  const commitCreatedIsoTime = util.timestampToIsoString(commit.timestampCreated);
-  const assetTree = await ipfs.cidToJson(commit.assetTreeCid);
-  const assetCid = assetTree.assetCid;
-  const license = await ipfs.cidToJson(assetTree.provider);
-  const integrity = await ipfs.cidToJson(assetTree.integrityCid);
-  const assetCreatedIsoTime = util.timestampToIsoString(assetTree.assetTimestampCreated);
+  const author = await ipfs.cidToJsonString(commitObject.author);
+  const committer = await ipfs.cidToJsonString(commitObject.committer);
+  const provider = await ipfs.cidToJsonString(commitObject.provider);
+  const action = await ipfs.cidToJsonString(commitObject.action);
+  const commitCreatedIsoTime = util.timestampToIsoString(commitObject.timestampCreated);
+  const assetTree = await ipfs.cidToJsonString(commitObject.assetTreeCid);
+  const assetTreeObject = JSON.parse(assetTree);
+  const assetCid = assetTreeObject.assetCid;
+  const license = await ipfs.cidToJsonString(assetTreeObject.provider);
+  const integrity = await ipfs.cidToJsonString(assetTreeObject.integrityCid);
+  const assetCreatedIsoTime = util.timestampToIsoString(assetTreeObject.assetTimestampCreated);
   const blockchain = blockchainName;
 
   const extendedCommit: ExtendedCommit = {
