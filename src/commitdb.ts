@@ -1,17 +1,23 @@
 import { ethers, utils } from "ethers";
 
+import axios from 'axios';
+import FormData = require("form-data");
+
 import * as ipfs from "./ipfs";
 import * as nit from "./nit";
 import * as util from "./util";
 
 interface ExtendedCommit {
+  commitEventIndex;
   blockNumber;
   transactionHash;
   commit;
   assetCid;
   assetTree;
   author;
+  authorWalletAddress;
   committer;
+  committerWalletAddress;
   provider;
   license;
   action;
@@ -21,14 +27,16 @@ interface ExtendedCommit {
   blockchain: string;
 }
 
-async function extend(commitSummary, blockchainName) {
+async function extend(commitEventIndex, commitSummary, blockchainName) {
   const blockNumber = commitSummary.blockNumber ;
   const transactionHash = commitSummary.transactionHash;
   const commitObject = commitSummary.commit;
   const commit = JSON.stringify(commitObject);
 
   const author = await ipfs.cidToJsonString(commitObject.author);
+  const authorWalletAddress = JSON.parse(author).wallet;
   const committer = await ipfs.cidToJsonString(commitObject.committer);
+  const committerWalletAddress = JSON.parse(committer).wallet;
   const provider = await ipfs.cidToJsonString(commitObject.provider);
   const action = await ipfs.cidToJsonString(commitObject.action);
   const commitCreatedIsoTime = util.timestampToIsoString(commitObject.timestampCreated);
@@ -41,11 +49,14 @@ async function extend(commitSummary, blockchainName) {
   const blockchain = blockchainName;
 
   const extendedCommit: ExtendedCommit = {
+    "commitEventIndex": commitEventIndex,
     "blockNumber": blockNumber,
     "transactionHash": transactionHash,
     "commit": commit,
     "author": author,
+    "authorWalletAddress": authorWalletAddress,
     "committer": committer,
+    "committerWalletAddress": committerWalletAddress,
     "provider": provider,
     "action": action,
     "commitCreatedIsoTime": commitCreatedIsoTime,
@@ -66,8 +77,43 @@ export async function extendCommits(assetCid, blockchainInfo, fromIndex, toIndex
   await nit.showCommits(commitsSummary);
   let extendedCommits = [];
   for (const summary of commitsSummary) {
-    const extendedCommit = await extend(summary, nit.blockchainNames[blockchainInfo.chainId])
+    const extendedCommit = await extend(assetCid, summary, nit.blockchainNames[blockchainInfo.chainId])
     extendedCommits.push(extendedCommit);
   }
   return extendedCommits;
+}
+
+// bubble -> calculate how many items to retrieve -> call update -> push extended commints to db -> return updated entry amount
+export async function update(assetCid, blockchainInfo, dbEntryAmount, dbEndpointUrl) {
+  const onchainCommitAmount = (await nit.getCommitBlockNumbers(assetCid, blockchainInfo)).length;
+  const updateFromIndex = dbEntryAmount;
+  const updateToIndex = onchainCommitAmount;
+  const extendedCommits = await extendCommits(assetCid, blockchainInfo, updateFromIndex, updateToIndex);
+
+  for (const extendedCommit of extendedCommits) {
+    const r = await httpPost(dbEndpointUrl, extendedCommit);
+  }
+
+  return {
+    "originalDbEntryAmount": dbEntryAmount,
+    "updateDbEntryAmount": updateToIndex - updateFromIndex,
+  };
+}
+
+export async function httpPost(url, data) {
+  const formData = new FormData();
+  for (const key of Object.keys(data)) {
+    formData.append(key, data[key] ? data[key] : "");
+  }
+
+  //const authBase64 = Buffer.from(`${ProjectId}:${ProjectSecret}`).toString('base64');
+  const requestConfig = {
+    "headers": {
+      //"Authorization": `Bearer ${authBase64}`,
+      ...formData.getHeaders(),
+    },
+  }
+  const r = await axios.post(url, formData, requestConfig);
+  const returnedData = r.data;
+  return returnedData;
 }
