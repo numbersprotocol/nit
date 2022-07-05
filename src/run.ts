@@ -573,18 +573,27 @@ async function main() {
         `Contract address: ${blockchain.contract.address}`,
       ]);
 
-      let commitResult;
+      let commitEventIndexCid;
       if ("mockup" in args.params === false) {
-        commitResult = await nit.commit(assetCid, JSON.stringify(commitData), blockchain);
+        commitEventIndexCid = assetCid;
       } else {
-        commitResult = await nit.commit(nit.assetCidMock, JSON.stringify(commitData), blockchain);
+        commitEventIndexCid = nit.assetCidMock;
       }
+      const commitResult = await nit.commit(commitEventIndexCid, JSON.stringify(commitData), blockchain);
 
       console.log(`Commit Tx: ${commitResult.hash}`);
       console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
 
       // Reset stage
       await setWorkingAssetCid("");
+
+      // Sync Commit Database
+      if (config.commitDatabase.updateUrl.length > 0 && config.commitDatabase.commitUrl.length > 0) {
+        const updateCommitDbResult = await nit.push(config.commitDatabase.updateUrl, commitEventIndexCid, config.commitDatabase.commitUrl);
+        console.log(`Commit Database update: ${JSON.stringify(updateCommitDbResult, null, 2)}`);
+      } else {
+        // User does not set up Commit Database.
+      }
     } else {
       console.log("This is dry run and Nit does not register this commit to blockchain.");
     }

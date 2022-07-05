@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 
 import * as action from "./action";
+import * as commitdb from "./commitdb";
 import * as integrityContract from "./contract";
 import * as ipfs from "./ipfs";
 import * as license from "./license";
@@ -72,7 +73,8 @@ export const nitconfigTemplate = {
     "projectSecret": "a".repeat(infuraSecretLength)
   },
   "commitDatabase": {
-    "endpoint": ""
+    "updateUrl": "",
+    "commitUrl": "",
   }
 };
 
@@ -257,6 +259,15 @@ export async function pull(assetCid: string, blockchainInfo) {
   } else {
     return null
   }
+}
+
+export async function push(commitDbUpdateUrl: string, assetCid: string, commitDbCommitUrl: string) {
+  const data = {
+    "assetCid": assetCid,
+    "dbEndpointUrl": commitDbCommitUrl,
+  };
+  const r = await commitdb.httpPost(commitDbUpdateUrl, data);
+  return r;
 }
 
 //export async function add(assetCid, assetUpdates, blockchainInfo) {
