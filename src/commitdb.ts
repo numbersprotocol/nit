@@ -84,14 +84,14 @@ export async function extendCommits(assetCid, blockchainInfo, fromIndex, toIndex
 }
 
 // bubble -> calculate how many items to retrieve -> call update -> push extended commints to db -> return updated entry amount
-export async function update(assetCid, blockchainInfo, dbEntryAmount, dbEndpointUrl) {
+export async function update(assetCid, blockchainInfo, dbEntryAmount, dbEndpointUrl, accessToken=null) {
   const onchainCommitAmount = (await nit.getCommitBlockNumbers(assetCid, blockchainInfo)).length;
   const updateFromIndex = dbEntryAmount;
   const updateToIndex = onchainCommitAmount;
   const extendedCommits = await extendCommits(assetCid, blockchainInfo, updateFromIndex, updateToIndex);
 
   for (const extendedCommit of extendedCommits) {
-    const r = await httpPost(dbEndpointUrl, extendedCommit);
+    const r = await httpPost(dbEndpointUrl, extendedCommit, accessToken);
   }
 
   return {
