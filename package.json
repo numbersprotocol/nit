@@ -26,7 +26,9 @@
     "dev-global-uninstall": "yarn global remove @numbersprotocol/nit",
     "dev-install": "yarn run build && yarn add file:$PWD",
     "dev-uninstall": "yarn remove @numbersprotocol/nit && yarn run clean",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
+    "publish": "yarn run build && yarn version && yarn publish",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
+    "test-single": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register"
   },
   "bin": {
     "nit": "bin/nit.js"
