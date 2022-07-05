@@ -12,6 +12,7 @@ import got from "got";
 import * as colors from "colors";
 
 import * as action from "./action";
+import * as commitdb from "./commitdb";
 import * as ipfs from "./ipfs";
 import * as license from "./license";
 import * as nit from "./nit";
@@ -369,6 +370,16 @@ async function parseArgs() {
       "command": "config",
       "params": paramOptions
     }
+  } else if (commandOptions.command === "commitdb") {
+    const paramDefinitions = [
+      { name: "asset-cid", defaultOption: true },
+    ];
+    const paramOptions = commandLineArgs(paramDefinitions,
+                                         { argv, stopAtFirstUnknown: true });
+    return {
+      "command": commandOptions.command,
+      "params": paramOptions
+    };
   } else {
     return {
       "command": "help",
@@ -645,6 +656,25 @@ async function main() {
       await launch(`${configFilepath}`);
     } else if ("list" in args.params) {
       console.log(JSON.stringify(config, null, 2));
+    } else {
+      await help();
+    }
+  } else if (args.command === "commitdb") {
+    if ("asset-cid" in args.params) {
+      const assetCid = args.params["asset-cid"];
+      const existingEntryAmount: number = (await commitdb.httpPost(config.commitDatabase.amountUrl, { "assetCid": assetCid })).response.commitAmount;
+
+      const updatedAmounts = await commitdb.update(
+        assetCid,
+        blockchain,
+        existingEntryAmount,
+        config.commitDatabase.commitUrl,
+        config.commitDatabase.accessToken
+      );
+
+      console.log(`Update status of Asset ${colors.green(assetCid)} in Commit database`);
+      console.log(`existed entries: ${colors.blue(updatedAmounts.originalDbEntryAmount.toString())}`);
+      console.log(`  added entries: ${colors.blue(updatedAmounts.updateDbEntryAmount.toString())}`);
     } else {
       await help();
     }

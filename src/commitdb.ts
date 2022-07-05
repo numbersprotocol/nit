@@ -95,7 +95,7 @@ export async function update(assetCid, blockchainInfo, dbEntryAmount, dbEndpoint
   }
 
   return {
-    "originalDbEntryAmount": dbEntryAmount,
+    "originalDbEntryAmount": parseInt(dbEntryAmount),
     "updateDbEntryAmount": updateToIndex - updateFromIndex,
   };
 }
