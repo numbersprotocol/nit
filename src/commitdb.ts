@@ -100,7 +100,7 @@ export async function update(assetCid, blockchainInfo, dbEntryAmount, dbEndpoint
   };
 }
 
-export async function httpPost(url, data) {
+export async function httpPost(url, data, accessToken=null) {
   const formData = new FormData();
   for (const key of Object.keys(data)) {
     formData.append(key, data[key] ? data[key] : "");
@@ -112,6 +112,9 @@ export async function httpPost(url, data) {
       //"Authorization": `Bearer ${authBase64}`,
       ...formData.getHeaders(),
     },
+  }
+  if (accessToken != null) {
+    requestConfig.headers.Authorization = `Bearer ${accessToken}`;
   }
   const r = await axios.post(url, formData, requestConfig);
   const returnedData = r.data;
