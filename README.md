@@ -1,6 +1,6 @@
 # Nit
 
-Nit is git for web3 digital asset and helps user to commit an asset's activities (chronicle) to blockchain.
+Nit is git for web3 digital asset and helps user to commit an asset's activities (chronicle) to blockchain. Please note, this repository is for nit open-source tools. If you are looking for accessing nit via API services, please visit [this wiki](https://github.com/numbersprotocol/enterprise-service/wiki/7.-Nit,-Native-Protocol-Tool) for more details.
 
 ## Why Nit
 
