@@ -9,7 +9,7 @@ let ProjectSecret = "";
 
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
-  ProjectId = projectSecret;
+  ProjectSecret = projectSecret;
 }
 
 export async function infuraIpfsAdd(filePath: string) {
@@ -32,7 +32,7 @@ export async function infuraIpfsAddBytes(bytes) {
   const authBase64 = Buffer.from(`${ProjectId}:${ProjectSecret}`).toString('base64');
   const requestConfig = {
     "headers": {
-      "Authorization": `Bearer ${authBase64}`,
+      "Authorization": `Basic ${authBase64}`,
       ...formData.getHeaders(),
     },
   }
