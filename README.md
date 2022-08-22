@@ -1,15 +1,25 @@
 # Nit
 
-Nit is git for web3 digital asset and helps user to commit an asset's activities (chronicle) to blockchain.
+Nit is git for web3 digital asset and helps user to commit an asset's activities (chronicle) to blockchain. Please note, this repository is for nit open-source tools. If you are looking for accessing nit via API services, please visit [this wiki](https://github.com/numbersprotocol/enterprise-service/wiki/7.-Nit,-Native-Protocol-Tool) for more details.
 
 ## Why Nit
 
-To make digital assets trustworthy and traceable, Nit leverages web3 technologies and Git core concepts. Everyone can chronicle their assets by creating on-chain records so that we can productively debate, narrate, and analyse.
+To make digital assets trustworthy and traceable, Nit leverages web3 technologies and Git core concepts. Everyone can chronicle their assets by creating on-chain records so that we can productively debate, narrate, and analyse. All asset histories are written on chain and are searchable by asset CID. A sample transaction can be found [here](https://snowtrace.io/tx/0x3ba2c36f7b0aeefc954041899a099c228e052a791a59f9922ab53ef9630f4a87).
 
 Case study
 
 1. [A crypto-based dossier could help prove Russia committed war crimes](https://edition.cnn.com/2022/06/10/tech/ukraine-war-crimes-blockchain/index.html), CNN
 2. [Starling Lab and Hala Systems file Cryptographic Submission of Evidence of War Crimes in Ukraine to the International Criminal Court](https://dornsife.usc.edu/cagr-news/news/2022/06/33571-starling-lab-and-hala-systems-file-cryptographic-submission-evidence-war-crimes), CAGR
+
+## Commit & Asset Tree
+
+nit adopt similar design as git. 
+
+* When there is an update to the asset, such as updating creator information or updating content itself to create a child asset, there should be a new commit attach the asset itself.
+
+* Every asset has a Tree file in IPFS to describe the property of the asset, including creator, creation time, license, etc. The asset tree CID is included in the on-chain message. Here is the example of the [asset tree](https://bafkreigbl7262jgwykk6ce47gbzvh4udr3rtzkpgd3b465664gzxma6zfi.ipfs.dweb.link/). 
+
+The  db diagram can be found [here](https://dbdiagram.io/d/6220e69c54f9ad109a54c3a5). In this diagram, you will find tables of `commit` and `assetTree` with the explanation of each data field
 
 ## Installation
 
