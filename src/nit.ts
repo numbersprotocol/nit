@@ -292,7 +292,7 @@ export async function commit(assetCid: string, commitData: string, blockchainInf
 
 export async function log(assetCid: string, blockchainInfo, fromIndex: number, toIndex: number = null) {
   const network = await blockchainInfo.provider.getNetwork();
-  if (network.chainId === 4 || network.chainId === 1313161555) {
+  if (network.chainId === 4 || network.chainId === 1313161555 || network.chainId === 10508) {
     // Ethereum Rinkeby
     await eventLogRangeQuery(assetCid, blockchainInfo);
   } else if (network.chainId === 43113 || network.chainId === 43114) {
