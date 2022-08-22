@@ -600,8 +600,9 @@ async function main() {
 
       // Sync Commit Database
       if (config.commitDatabase.updateUrl.length > 0 && config.commitDatabase.commitUrl.length > 0) {
-        const updateCommitDbResult = await nit.push(config.commitDatabase.updateUrl, commitEventIndexCid, config.commitDatabase.commitUrl);
-        console.log(`Commit Database update: ${JSON.stringify(updateCommitDbResult, null, 2)}`);
+        // TODO: Asking Commit DB to sync
+        //const updateCommitDbResult = await nit.push(config.commitDatabase.updateUrl, commitEventIndexCid, config.commitDatabase.commitUrl);
+        //console.log(`Commit Database update: ${JSON.stringify(updateCommitDbResult, null, 2)}`);
       } else {
         // User does not set up Commit Database.
       }
