@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { BytesLike } from "@ethersproject/bytes"
 
 import * as action from "./action";
 import * as commitdb from "./commitdb";
@@ -18,6 +19,7 @@ colors.enable();
 const privateKeyLength = 64;
 const infuraSecretLength = 27;
 export const cidv1Length = 59;
+export const integrityHashLength = 64;
 export const assetCidMock = "a".repeat(cidv1Length);
 export const nitconfigTemplate = {
   /* Author's Identity CID. */
@@ -552,4 +554,8 @@ export async function signIntegrityHash(sha256sum: string, signer) {
 export async function verifyIntegrityHash(sha256sum: string, signature) {
   const recoveredAddress = await ethers.utils.verifyMessage(sha256sum, signature);
   return recoveredAddress;
+}
+
+export async function getIntegrityHash(assetBytes: BytesLike) {
+  return await (ethers.utils.sha256(assetBytes)).substring(2);
 }

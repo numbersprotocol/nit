@@ -117,6 +117,7 @@ async function help() {
         "add       Add assetTree",
         "status    Show current temporary commit",
         "commit    Generate and register commit to web3",
+        "sign      Create integrity signature",
         "verify    Verify integrity signature",
         "log       Show asset's commits",
         "diff      Show diff between two commits",
@@ -197,6 +198,12 @@ async function help() {
           "name": "mockup",
           "description": "Use Asset CID mockup (59 'a' chars) as Commit's targeting digital asset."
         },
+      ]
+    },
+    {
+      header: 'sign',
+      content: [
+        "$ nit sign -i|--integrity-hash {underline integrityHash}",
       ]
     },
     {
@@ -324,6 +331,16 @@ async function parseArgs() {
     return {
       "command": "status",
       "params": {}
+    }
+  } else if (commandOptions.command === "sign") {
+    const paramDefinitions = [
+      { name: "integrity-hash", alias: "i", defaultValue: "" },
+      { name: "filepath", alias: "f", defaultValue: "" },
+    ];
+    const paramOptions = commandLineArgs(paramDefinitions, { argv });
+    return {
+      "command": "sign",
+      "params": paramOptions
     }
   } else if (commandOptions.command === "verify") {
     const paramDefinitions = [
@@ -620,6 +637,36 @@ async function main() {
     } else {
       console.log("No working Asset");
     }
+  } else if (args.command === "sign") {
+    const filepath = args.params.filepath;
+    let integrityHash: string = args.params["integrity-hash"];
+
+    if (filepath !== "" && integrityHash !== "") {
+      console.error("Signing target should be one of asset or integrity hash. You provide them both.");
+      return;
+    }
+
+    if (filepath !== "") {
+      if (fs.existsSync(filepath)) {
+        const assetBytes = fs.readFileSync(filepath);
+        integrityHash = await nit.getIntegrityHash(assetBytes);
+      } else {
+        console.error(`File does not exist: ${filepath}`);
+        return;
+      }
+    } else {
+      if (integrityHash === "") {
+        await help();
+      }
+
+      if (integrityHash.length != nit.integrityHashLength) {
+        console.error(`Invalid integrity hash, length is ${integrityHash.length} but not 64.`);
+        return;
+      }
+    }
+
+    const signature = await nit.signIntegrityHash(integrityHash, blockchain.signer);
+    console.log(`Signature: ${signature}`);
   } else if (args.command === "verify") {
     const integrityHash = args.params["integrity-hash"];
     const signature = args.params.signature;
