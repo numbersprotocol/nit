@@ -2,8 +2,8 @@
 Project IntegrityRecord {
   Note: '''
   description: Numbers Protocol Integrity Record spec
-  version: 3.3.0
-  date: 2022-08-23
+  version: 4.0.0
+  date: 2022-08-25
   colors:
     - purple: on blockchain (updatable)
     - blue: files on IPFS (updatable)
@@ -19,7 +19,8 @@ Table commit [headercolor: #8e44ad] {
   assetTreeCid cid [note: 'CID of the asset Tree file']
   assetTreeSha256 sha256 [note: 'sha256sum of the asset Tree file']
   assetTreeSignature signature [note: 'EIP-191 signature signed by author.']
-  committer cid [note: 'CID of the person who commits it.']
+  author address [note: 'Who creates the commit.']
+  committer address [note: 'Who registers the commit.']
   action cid [note: 'CID of the network action performed for the asset file.']
   actionResultUri str [note: 'Result uri of this action']
   provider cid [note: 'CID of the commit service provider.']
