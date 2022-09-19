@@ -46,7 +46,7 @@ export async function infuraIpfsCat(cid) {
   const authBase64 = Buffer.from(`${ProjectId}:${ProjectSecret}`).toString('base64');
   const requestConfig = {
     "headers": {
-      "Authorization": `Bearer ${authBase64}`,
+      "Authorization": `Basic ${authBase64}`,
     },
     timeout: { request: 30000 },
   }
