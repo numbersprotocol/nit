@@ -170,12 +170,12 @@ async function createCommitBase(signer, assetTree, authorAddress, providerCid) {
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
                                                            assetMimetype,
                                                            assetTimestampCreated,
-                                                           assetCreatorCid,
+                                                           assetCreator,
                                                            assetLicense="cc-by-nc",
                                                            assetAbstract="") {
   let stagingAssetTree = await createAssetTreeBaseRemote(assetBytes, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
-  stagingAssetTree.assetCreator = assetCreatorCid;
+  stagingAssetTree.assetCreator = assetCreator;
   stagingAssetTree.license = license.Licenses[assetLicense];
   stagingAssetTree.abstract = assetAbstract;
   return stagingAssetTree;
@@ -185,12 +185,12 @@ export async function createAssetTreeInitialRegister(assetCid,
                                                      assetSha256,
                                                      assetMimetype,
                                                      assetTimestampCreated,
-                                                     assetCreatorCid,
+                                                     assetCreator,
                                                      assetLicense="cc-by-nc",
                                                      assetAbstract="") {
   let stagingAssetTree = await createAssetTreeBase(assetCid, assetSha256, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
-  stagingAssetTree.assetCreator = assetCreatorCid;
+  stagingAssetTree.assetCreator = assetCreator;
   stagingAssetTree.license = license.Licenses[assetLicense];
   stagingAssetTree.abstract = assetAbstract;
   return stagingAssetTree;
