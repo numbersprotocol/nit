@@ -294,24 +294,42 @@ export async function commit(assetCid: string, commitData: string, blockchainInf
 
 export async function log(assetCid: string, blockchainInfo, fromIndex: number, toIndex: number = null) {
   const network = await blockchainInfo.provider.getNetwork();
-  if (network.chainId === 4 || network.chainId === 1313161555 || network.chainId === 10508) {
-    // Ethereum Rinkeby
-    await eventLogRangeQuery(assetCid, blockchainInfo);
-  } else if (network.chainId === 43113 || network.chainId === 43114) {
-    // Avalanche: 43114, Fuji: 43113
 
-    if (toIndex <= fromIndex) {
-      const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
-      const commitAmount: number = commitBlockNumbers.length;
-      toIndex = commitAmount;
-    }
-
-    const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, toIndex);
-    const commits = await getCommits(commitEvents);
-    await showCommits(commits);
-  } else {
-    console.log(`Unknown chain ID ${network.chainId}`);
+  if (toIndex <= fromIndex) {
+    const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+    const commitAmount: number = commitBlockNumbers.length;
+    toIndex = commitAmount;
   }
+
+  const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, toIndex);
+  const commits = await getCommits(commitEvents);
+  await showCommits(commits);
+}
+
+export async function getCommit(assetCid: string, blockchainInfo, blockNumber: number) {
+  const filter = await blockchainInfo.contract.filters.Commit(null, assetCid);
+  const abi = [
+    "event Commit(address indexed recorder, string indexed assetCid, string commitData)"
+  ];
+  const commitEventInterface = new ethers.utils.Interface(abi);
+
+  let events = [];
+
+  filter.fromBlock = blockNumber;
+  filter.toBlock = blockNumber;
+  const eventLogs = await blockchainInfo.provider.getLogs(filter);
+
+  for (const eventLog of eventLogs) {
+    const commitEvent = commitEventInterface.parseLog(eventLog);
+    // merge eventLog and commitEvent
+    events.push(Object.assign({}, eventLog, commitEvent));
+  }
+
+  const commits = await getCommits(events);
+  console.log(`${JSON.stringify(commits[0].commit)}`);
+
+  return commits[0].commit;
+  //await showCommits(commits);
 }
 
 export async function showCommits(commits) {
@@ -468,6 +486,10 @@ export async function getCommitsSummary(events) {
   return commitsSummary;
 }
 
+/* TODO: Remove this function in the next feature release.
+ *
+ * Query events on Ethereum. The performance is faster than eventLogIteratingQuery.
+ */
 async function eventLogRangeQuery(assetCid: string, blockchainInfo) {
   console.log(`Commit logs of assetCid: ${assetCid}`);
 
