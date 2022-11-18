@@ -12,6 +12,10 @@ export async function initInfura(projectId, projectSecret) {
   ProjectSecret = projectSecret;
 }
 
+export async function infuraAccessToken(projectId, projectSecret) {
+  return Buffer.from(`${projectId}:${projectSecret}`).toString('base64');
+}
+
 export async function infuraIpfsAdd(filePath: string) {
   const contentBytes = fs.readFileSync(filePath);
   const encodingFormat = mime.lookup(filePath);
