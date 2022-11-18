@@ -1,8 +1,10 @@
-import axios from 'axios';
-import FormData = require("form-data");
+import * as FormData from "form-data";
+import * as stream from "stream";
 import fs = require("fs");
 import got from "got";
 import mime = require("mime-types");
+
+import * as http from "./http";
 
 let ProjectId = "";
 let ProjectSecret = "";
@@ -26,22 +28,18 @@ export async function infuraIpfsAdd(filePath: string) {
 }
 
 export async function infuraIpfsAddBytes(bytes) {
-  const { Readable } = require("stream");
-  const fileReadStream = Readable.from(bytes);
-
+  const fileReadStream = stream.Readable.from(bytes);
   const formData = new FormData();
   formData.append('file', fileReadStream);
 
   const url = "https://ipfs.infura.io:5001/api/v0/add?cid-version=1";
   const authBase64 = Buffer.from(`${ProjectId}:${ProjectSecret}`).toString('base64');
-  const requestConfig = {
-    "headers": {
-      "Authorization": `Basic ${authBase64}`,
-      ...formData.getHeaders(),
-    },
-  }
-  const r = await axios.post(url, formData, requestConfig);
-  const assetCid = r.data.Hash;
+  const headers = {
+    "Authorization": `Basic ${authBase64}`,
+    ...formData.getHeaders(),
+  };
+  const httpResponse = await http.post(url, formData, headers);
+  const assetCid = httpResponse.data.Hash;
   return assetCid;
 }
 
@@ -54,6 +52,10 @@ export async function infuraIpfsCat(cid) {
     },
     timeout: { request: 30000 },
   }
+  /* FIXME: Axios's response.data.lenght is smaller than content length.
+   * Use Got as a temporary workardound.
+   * https://github.com/axios/axios/issues/3711
+   */
   const r = await got.post(url, requestConfig);
   return r.rawBody;
 }
