@@ -456,8 +456,9 @@ async function main() {
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
 
   if (args.command === "ipfsadd") {
-    const r = await ipfs.infuraIpfsAdd(args.params.fileapth);
-    console.log(`Command ipfsadd result: ${JSON.stringify(r, null, 2)}`);
+    const contentBytes = fs.readFileSync(args.params.fileapth);
+    const assetCid = await ipfs.infuraIpfsAddBytes(contentBytes);
+    console.log(`Command ipfsadd result (Asset CID): ${assetCid}`);
   } else if (args.command === "addv1") {
     const assetTreeFileContent = fs.readFileSync(args.params.filepath, "utf-8");
     const assetTree = JSON.parse(assetTreeFileContent);
@@ -474,20 +475,21 @@ async function main() {
     fs.writeFileSync(`${commitDir}/assetTree.json`, JSON.stringify(assetTree, null, 2));
 
     // Get assetTreeCid and encodingFormat
-    const assetTreeInfo = await ipfs.infuraIpfsAdd(`${commitDir}/assetTree.json`);
+    const contentBytes = fs.readFileSync(`${commitDir}/assetTree.json`);
+    const assetCid= await ipfs.infuraIpfsAddBytes(contentBytes);
 
     // Get assetTreeSha256
     const assetTreeSha256 = sha256(assetTreeFileContent);
 
     const commit = {
-      "assetTreeCid": assetTreeInfo.assetCid,
+      "assetTreeCid": assetCid,
       "assetTreeSha256": assetTreeSha256.toString(),
       "assetTreeSignature": await nit.signIntegrityHash(
                               assetTreeSha256.toString(), blockchain.signer),
       "author": config.author,
       "committer": config.committer,
       "action": action.Actions["action-initial-registration"],
-      "actionResult": `https://${assetTreeInfo.assetCid}.ipfs.dweb.link`,
+      "actionResult": `https://${assetCid}.ipfs.dweb.link`,
       "provider": config.provider,
       "abstract": "Initial registration.",
       "timestampCreated": Math.floor(Date.now() / 1000),

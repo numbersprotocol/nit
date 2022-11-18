@@ -1,8 +1,6 @@
 import * as FormData from "form-data";
 import * as stream from "stream";
-import fs = require("fs");
 import got from "got";
-import mime = require("mime-types");
 
 import * as http from "./http";
 
@@ -16,15 +14,6 @@ export async function initInfura(projectId, projectSecret) {
 
 export async function infuraAccessToken(projectId, projectSecret) {
   return Buffer.from(`${projectId}:${projectSecret}`).toString('base64');
-}
-
-export async function infuraIpfsAdd(filePath: string) {
-  const contentBytes = fs.readFileSync(filePath);
-  const encodingFormat = mime.lookup(filePath);
-  return {
-    "assetCid": await infuraIpfsAddBytes(contentBytes),
-    "encodingFormat": encodingFormat
-  };
 }
 
 export async function infuraIpfsAddBytes(bytes) {
