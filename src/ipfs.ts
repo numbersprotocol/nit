@@ -1,11 +1,15 @@
 import * as FormData from "form-data";
 import * as stream from "stream";
 import got from "got";
+import { Estuary } from "@numbersprotocol/estuary-upload";
 
 import * as http from "./http";
 
+// FIXME: make Nit config to be a module
 let ProjectId = "";
 let ProjectSecret = "";
+
+let EstuaryInstance;
 
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
@@ -66,5 +70,20 @@ export async function cidToJson(cid) {
   } catch(error) {
     console.error(`Failed to download content of CID ${cid}`);
     return null;
+  }
+}
+
+export async function initEstuary(apiKey) {
+  EstuaryInstance = new Estuary(apiKey);
+}
+
+export async function estuaryAdd(bytes) {
+  // Kudo CIDv1
+  let cid;
+  try {
+    cid = await EstuaryInstance.addFromBuffer(bytes);
+    return cid;
+  } catch(error) {
+    console.error(error);
   }
 }
