@@ -263,15 +263,6 @@ export async function pull(assetCid: string, blockchainInfo) {
   }
 }
 
-export async function push(commitDbUpdateUrl: string, assetCid: string, commitDbCommitUrl: string) {
-  const data = {
-    "assetCid": assetCid,
-    "dbEndpointUrl": commitDbCommitUrl,
-  };
-  const r = await commitdb.httpPost(commitDbUpdateUrl, data);
-  return r;
-}
-
 //export async function add(assetCid, assetUpdates, blockchainInfo) {
 //  const latestAssetTree = await pull(assetCid, blockchainInfo);
 //  if (latestAssetTree != null) {
