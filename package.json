@@ -1,6 +1,6 @@
 {
   "name": "@numbersprotocol/nit",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "git for web3 digital asset",
   "main": "lib/nit.js",
   "repository": "https://github.com/numbersprotocol/nit",
@@ -26,7 +26,6 @@
     "dev-global-uninstall": "yarn global remove @numbersprotocol/nit",
     "dev-install": "yarn run build && yarn add file:$PWD",
     "dev-uninstall": "yarn remove @numbersprotocol/nit && yarn run clean",
-    "publish": "yarn run build && yarn version && yarn publish",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
     "test-single": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register"
   },
