@@ -196,11 +196,16 @@ export async function createAssetTreeInitialRegister(assetCid,
   return stagingAssetTree;
 }
 
-export async function createCommitInitialRegister(signer, assetTree, authorAddress, providerCid) {
+export async function createCommitInitialRegister(signer, 
+                                                  assetTree, 
+                                                  authorAddress, 
+                                                  providerCid, 
+                                                  commitMessage="Action: action-initial-registration.",
+                                                  commitAction="action-initial-registration") {
   let stagingCommit = await createCommitBase(signer, assetTree, authorAddress, providerCid);
-  stagingCommit.action = action.Actions["action-initial-registration"];
+  stagingCommit.action = action.Actions[commitAction];
   stagingCommit.actionResult = `https://${stagingCommit.assetTreeCid}.ipfs.dweb.link`;
-  stagingCommit.abstract = "Action action-initial-registration.";
+  stagingCommit.abstract = commitMessage;
   stagingCommit.timestampCreated = Math.floor(Date.now() / 1000);
   return stagingCommit;
 }
