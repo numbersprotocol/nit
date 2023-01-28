@@ -120,3 +120,12 @@ export async function httpPost(url, data, accessToken=null) {
   const returnedData = r.data;
   return returnedData;
 }
+
+export async function push(commitDbUpdateUrl: string, assetCid: string, commitDbCommitUrl: string) {
+  const data = {
+    "assetCid": assetCid,
+    "dbEndpointUrl": commitDbCommitUrl,
+  };
+  const r = await httpPost(commitDbUpdateUrl, data);
+  return r;
+}
