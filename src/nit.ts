@@ -201,7 +201,7 @@ export async function createCommitInitialRegister(signer,
                                                   authorAddress, 
                                                   providerCid, 
                                                   commitMessage="Action: action-initial-registration.",
-                                                  commitAction="action-initial-registration") {
+                                                  commitAction="action-initial-registration-jade") {
   let stagingCommit = await createCommitBase(signer, assetTree, authorAddress, providerCid);
   stagingCommit.action = action.Actions[commitAction];
   stagingCommit.actionResult = `https://${stagingCommit.assetTreeCid}.ipfs.dweb.link`;
