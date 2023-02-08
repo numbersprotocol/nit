@@ -83,12 +83,10 @@ export const nitconfigTemplate = {
 };
 
 export const blockchainNames = {
-  1: "ethereum",
-  4: "rinkeby",
-  137: "polygon",
+  10507: "jade",
+  10508: "snow",
   43113: "fuji",
   43114: "avalanche",
-  80001: "mumbai",
 };
 
 export async function loadBlockchain(config) {
