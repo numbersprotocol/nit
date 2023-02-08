@@ -31,23 +31,25 @@ export const nitconfigTemplate = {
   /* Which network config you want to use.
      One of the network names in the "network" section below.
      E.g., rinkeby */
-  "defaultNetwork": "fuji",
+  "defaultNetwork": "jade",
   "network": {
-    "rinkeby": {
-      /* Provider's URL.
-         If you are using RPC provider service like Alchemy or Infura,
-         put the URL and API key here. */
-      "url": "https://eth-rinkeby.alchemyapi.io/v2/{API_KEY}",
-      "chainId": 4,
-      /* Gas units consumed by a commit. */
-      "gasLimit": 200000,
-      /* Private key(s) of the Commit Tx sender. */
+    "jade": {
+      "url": "https://mainnetrpc.num.network",
+      "chainId": 10507,
       "accounts": [
         "a".repeat(privateKeyLength)
       ],
-      /* Integrity registration contract address. */
-      "contract": "0x2Aa4e29872DE77E1Bc6cF310d647F9cB0f9a073B",
-      "explorerBaseUrl": "https://rinkeby.etherscan.io/tx"
+      "contract": "0x7EC2F14ABE8b0Ea2F657bBb62b6fEfDe161c9001",
+      "explorerBaseUrl": "https://mainnet.num.network/tx"
+    },
+    "snow": {
+      "url": "https://testnetrpc.num.network",
+      "chainId": 10508,
+      "accounts": [
+        "a".repeat(privateKeyLength)
+      ],
+      "contract": "0x02eFA51b583d03342687b585417e5A62cd8273a4",
+      "explorerBaseUrl": "https://testnet.num.network/tx"
     },
     "avalanche": {
       "url": "https://api.avax.network/ext/bc/C/rpc",
