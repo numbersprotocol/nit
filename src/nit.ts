@@ -196,10 +196,10 @@ export async function createAssetTreeInitialRegister(assetCid,
   return stagingAssetTree;
 }
 
-export async function createCommitInitialRegister(signer, 
-                                                  assetTree, 
-                                                  authorAddress, 
-                                                  providerCid, 
+export async function createCommitInitialRegister(signer,
+                                                  assetTree,
+                                                  authorAddress,
+                                                  providerCid,
                                                   commitMessage="Action: action-initial-registration.",
                                                   commitAction="action-initial-registration-jade") {
   let stagingCommit = await createCommitBase(signer, assetTree, authorAddress, providerCid);
