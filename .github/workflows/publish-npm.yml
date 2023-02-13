@@ -14,6 +14,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,7 +27,7 @@ jobs:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
           # Defaults to the user or organization that owns the workflow file
-          #scope: '@numbersprotocol'
+          scope: '@numbersprotocol'
 
       - name: Install dependencies
         run: yarn install
