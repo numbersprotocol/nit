@@ -26,6 +26,9 @@ jobs:
           # Defaults to the user or organization that owns the workflow file
           scope: '@numbersprotocol'
 
+      - name: Install dependencies
+        run: yarn install
+
       - name: Build project
         run: yarn build
 
