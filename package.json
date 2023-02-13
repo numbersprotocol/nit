@@ -41,7 +41,7 @@
     "@types/command-line-usage": "^5.0.2",
     "@types/crypto-js": "^4.1.1",
     "@types/mocha": "^9.1.0",
-    "@types/node": "^17.0.25",
+    "@types/node": "^18.13.0",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "chai": "^4.3.6",
