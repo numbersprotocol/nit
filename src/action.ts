@@ -1,5 +1,6 @@
 export const Actions = {
-  "action-initial-registration": "bafkreiavifzn7ntlb6p2lr55k3oezo6pofwvknecukc5auhng4miowcte4",
+  "action-initial-registration": "bafkreicptxn6f752c4pvb6gqwro7s7wb336idkzr6wmolkifj3aafhvwii",
+  "action-initial-registration-avalanche": "bafkreiavifzn7ntlb6p2lr55k3oezo6pofwvknecukc5auhng4miowcte4",
   "action-initial-registration-jade": "bafkreicptxn6f752c4pvb6gqwro7s7wb336idkzr6wmolkifj3aafhvwii",
   "action-commit" :"bafkreiceiqfe4w4g4j46rsi4h4tbqu35ivewfxm4q743tfmegscpg7d63m",
   "action-mint-erc721-nft-jade": "bafkreiakk6le5wgbl3zz3acybd2wfc2y32mpmxj4kbjjjskom7cy2akwly",

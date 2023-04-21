@@ -1,6 +1,8 @@
 import { ethers } from "ethers";
 import { BytesLike } from "@ethersproject/bytes"
 
+import got from "got";
+
 import * as action from "./action";
 import * as commitdb from "./commitdb";
 import * as integrityContract from "./contract";
@@ -167,6 +169,50 @@ async function createCommitBase(signer, assetTree, authorAddress, providerCid) {
   return stagingCommit;
 }
 
+async function addActionNameInCommit(commitData: string): Promise<string> {
+  /* Hidden rule: add actionName in commitData
+   *
+   * Check actionName is sent, if yes, use the actionName defined by the App,
+   * if no, the default acitonName will be $networkActionName found in the IPFS
+   * file of action
+   * (for non-jade blockchain, will be $networkActionName + '-' + $blockchain)
+   *
+   * If there is no action specified or the action is not yet defined in
+   * action.Actions, will use commit as the default action.
+   */
+
+  try {
+    let commitJson = JSON.parse(commitData);
+    if ("actionName" in commitJson) {
+      return commitData;
+    }
+
+    let newActionName = "commit";
+    try {
+      const cid = commitJson.action;
+      if (Object.values(action.Actions).includes(cid)) {
+        const url = `https://ipfs-pin.numbersprotocol.io/ipfs/${cid}`;
+        const response = await got(url, { timeout: { request: 30000 } });
+        const actionJson = JSON.parse(response.body);
+        const blockchain = actionJson.blockchain;
+        const networkActionName = actionJson.networkActionName;
+        if (blockchain == "jade") {
+          newActionName = networkActionName;
+        } else {
+          newActionName = `${networkActionName}-${blockchain}`;
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to get action, error: ${error}`);
+    }
+    commitJson.actionName = newActionName;
+    return JSON.stringify(commitJson);
+  } catch (error) {
+    console.error(`Failed to edit commit, error: ${error}`);
+  }
+  return commitData;
+}
+
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
                                                            assetMimetype,
                                                            assetTimestampCreated,
@@ -278,12 +324,13 @@ export async function pull(assetCid: string, blockchainInfo) {
 //}
 
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
+  const commitString = await addActionNameInCommit(commitData);
   let r;
   if (blockchainInfo.gasPrice != null) {
     console.log(`Gas Price: ${blockchainInfo.gasPrice} Wei`);
-    r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit, gasPrice: blockchainInfo.gasPrice });
+    r = await blockchainInfo.contract.commit(assetCid, commitString, { gasLimit: blockchainInfo.gasLimit, gasPrice: blockchainInfo.gasPrice });
   } else {
-    r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
+    r = await blockchainInfo.contract.commit(assetCid, commitString, { gasLimit: blockchainInfo.gasLimit });
   }
   return r;
 }
