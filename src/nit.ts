@@ -186,7 +186,7 @@ function addActionNameInCommit(commitData: string) {
       commitJson["actionName"] = "action-commit";
     }
   }
-  return commitJson;
+  return JSON.stringify(commitJson);
 }
 
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
