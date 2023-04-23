@@ -1,8 +1,6 @@
 import { ethers } from "ethers";
 import { BytesLike } from "@ethersproject/bytes"
 
-import got from "got";
-
 import * as action from "./action";
 import * as commitdb from "./commitdb";
 import * as integrityContract from "./contract";
