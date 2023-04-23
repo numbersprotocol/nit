@@ -169,48 +169,26 @@ async function createCommitBase(signer, assetTree, authorAddress, providerCid) {
   return stagingCommit;
 }
 
-async function addActionNameInCommit(commitData: string): Promise<string> {
-  /* Hidden rule: add actionName in commitData
-   *
-   * Check actionName is sent, if yes, use the actionName defined by the App,
-   * if no, the default acitonName will be $networkActionName found in the IPFS
-   * file of action
-   * (for non-jade blockchain, will be $networkActionName + '-' + $blockchain)
-   *
-   * If there is no action specified or the action is not yet defined in
-   * action.Actions, will use commit as the default action.
-   */
-
-  try {
-    let commitJson = JSON.parse(commitData);
-    if ("actionName" in commitJson) {
-      return commitData;
+/* Hidden rule: add actionName in commitData
+ *
+ * Check actionName is sent in commitData,
+ *   if exist, use the actionName defined by the App,
+ *   if not exist, check the given Action Nid (the action field in commitData),
+ *     if valid, use the mapped actionName
+ *     if invalid, use the default actionName "action-commit"
+ */
+function addActionNameInCommit(commitData: string) {
+  const commitJson = JSON.parse(commitData);
+  if (!commitJson.hasOwnProperty("actionName")) {
+    if (commitJson.hasOwnProperty("action")) {
+      const nid = commitJson["action"];
+      const key = action.getNameByNid(nid);
+      commitJson["actionName"] = key;
+    } else {
+      commitJson["actionName"] = "action-commit";
     }
-
-    let newActionName = "commit";
-    try {
-      const cid = commitJson.action;
-      if (Object.values(action.Actions).includes(cid)) {
-        const url = `https://ipfs-pin.numbersprotocol.io/ipfs/${cid}`;
-        const response = await got(url, { timeout: { request: 30000 } });
-        const actionJson = JSON.parse(response.body);
-        const blockchain = actionJson.blockchain;
-        const networkActionName = actionJson.networkActionName;
-        if (blockchain == "jade") {
-          newActionName = networkActionName;
-        } else {
-          newActionName = `${networkActionName}-${blockchain}`;
-        }
-      }
-    } catch (error) {
-      console.error(`Failed to get action, error: ${error}`);
-    }
-    commitJson.actionName = newActionName;
-    return JSON.stringify(commitJson);
-  } catch (error) {
-    console.error(`Failed to edit commit, error: ${error}`);
   }
-  return commitData;
+  return commitJson;
 }
 
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
@@ -324,7 +302,7 @@ export async function pull(assetCid: string, blockchainInfo) {
 //}
 
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
-  const commitString = await addActionNameInCommit(commitData);
+  const commitString = addActionNameInCommit(commitData);
   let r;
   if (blockchainInfo.gasPrice != null) {
     console.log(`Gas Price: ${blockchainInfo.gasPrice} Wei`);
