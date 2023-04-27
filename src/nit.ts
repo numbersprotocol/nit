@@ -127,7 +127,7 @@ const configurableAssetTreeKeys = [
 async function createAssetTreeBaseRemote(assetByes, assetMimetype) {
   let stagingAssetTree: any = {};
   try {
-    stagingAssetTree.assetCid = await ipfs.infuraIpfsAddBytes(assetByes);
+    stagingAssetTree.assetCid = await ipfs.ipfsAddBytes(assetByes);
     // remove leading 0x to as the same as most sha256 tools
     stagingAssetTree.assetSha256 = (await ethers.utils.sha256(assetByes)).substring(2);
     stagingAssetTree.encodingFormat = assetMimetype;
@@ -155,7 +155,7 @@ async function createCommitBase(signer, assetTree, authorAddress, providerCid) {
   let stagingCommit: any = {};
 
   const assetTreeBytes = Buffer.from(JSON.stringify(assetTree, null, 2));
-  stagingCommit.assetTreeCid = await ipfs.infuraIpfsAddBytes(assetTreeBytes);
+  stagingCommit.assetTreeCid = await ipfs.ipfsAddBytes(assetTreeBytes);
   stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(assetTree, null, 2)))).substring(2);
   // remove leading 0x to as the same as most sha256 tools
   stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
@@ -380,8 +380,8 @@ export async function difference(assetCid: string, blockchainInfo, fromIndex: nu
   const commits = await getCommits(commitEvents);
   const fromCommit = commits[0];
   const toCommit = commits[commits.length - 1];
-  const fromAssetTree = JSON.parse((await ipfs.infuraIpfsCat(fromCommit.commit.assetTreeCid)).toString());
-  const toAssetTree = JSON.parse((await ipfs.infuraIpfsCat(toCommit.commit.assetTreeCid)).toString());
+  const fromAssetTree = JSON.parse((await ipfs.ipfsCat(fromCommit.commit.assetTreeCid)).toString());
+  const toAssetTree = JSON.parse((await ipfs.ipfsCat(toCommit.commit.assetTreeCid)).toString());
   const commitDiff = {
     "fromIndex": fromIndex,
     "fromBlockNumber": fromCommit.blockNumber,
@@ -404,7 +404,7 @@ export async function getLatestCommitSummary(assetCid, blockchainInfo) {
 }
 
 export async function getAssetTree(assetTreeCid) {
-  const assetTreeBytes = await ipfs.infuraIpfsCat(assetTreeCid);
+  const assetTreeBytes = await ipfs.ipfsCat(assetTreeCid);
   const assetTree = JSON.parse(assetTreeBytes.toString());
   return assetTree;
 }
