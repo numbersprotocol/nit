@@ -37,6 +37,7 @@ To check the difference between the last releaes and the latest dev status, clic
 
 1. Change default network in registration action from Avalanche to Jade
 
-[unreleased]: https://github.com/numbersprotocol/capture-lite/compare/1.3.0...HEAD
+[unreleased]: https://github.com/numbersprotocol/capture-lite/compare/1.4.0...HEAD
+[1.4.0]: https://github.com/numbersprotocol/capture-lite/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/numbersprotocol/capture-lite/compare/1.2.9...1.3.0
 [1.2.9]: https://github.com/numbersprotocol/capture-lite/releases/tag/1.2.9
