@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To check the difference between the last releaes and the latest dev status, click the link above.
 
+## [1.4.0] - 2023-05-02
+
+### Added
+
+1. Add [Action Names](https://docs.numbersprotocol.io/introduction/numbers-protocol/defining-web3-assets/commit#actions)
+
+### Changed
+
+1. Add IPFS abstract layer to support multiple IPFS backends
+
 ## [1.3.0] - 2023-02-14
 
 ### Added
