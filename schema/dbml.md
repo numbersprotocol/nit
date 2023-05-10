@@ -2,8 +2,8 @@
 Project IntegrityRecord {
   Note: '''
   description: Numbers Protocol Integrity Record spec
-  version: 4.2.0
-  date: 2023-04-20
+  version: 4.3.0
+  date: 2023-05-11
   colors:
     - purple: on blockchain (updatable)
     - blue: files on IPFS (updatable)
@@ -69,9 +69,14 @@ Table assetTree [headercolor: #3498db] {
   assetSha256 sha256 [note: 'sha256sum of the asset file (blob)']
   encodingFormat str [note: 'The asset\'s type expressed using a MIME format.']
   assetCreator str [note: 'Creator\'s name']
-  assetCreatorProfile cid [note: 'Creator of the asset file']
-  assetCreatorWallet address [note: 'Creator\'s wallet address']
+  creatorProfile cid [note: 'Creator of the asset file']
+  creatorWallet address [note: 'Creator\'s wallet address']
   assetTimestampCreated timestamp [note: 'Creation time of the asset file']
+  assetLocationCreated str [note: 'Creation location of the asset file']
+  parentAssetCid cid [note: 'Cid of the parent asset']
+  generatedBy str [note: 'AI model used to generate the content']
+  generatedThrough str [note: 'URL of AI service']
+  usedBy str [note: 'URL of the website that uses the asset']
   license license [note: 'license of the asset file']
   nftRecord "nftRecord[]" [note: 'List of NFT records']
   integrityCid cid [note: 'CID of the integrity proof']
@@ -211,7 +216,7 @@ Enum "proofKey" {
 Ref: "nftRecord"."tokenId" - "nft"."tokenId"
 Ref: "assetTree"."license" - "license"."_"
 Ref: "assetTree"."integrityCid" - "proofMetadata"."_"
-Ref: "assetTree"."assetCreatorProfile" - "identity"."_"
+Ref: "assetTree"."creatorProfile" - "identity"."_"
 Ref: "assetTree".nftRecord < nftRecord."_" // One asset can link to multiple nft_records
 Ref: "commit"."action" - "action"."_"
 Ref: "commit"."provider" - "identity"."_"
