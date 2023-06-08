@@ -189,17 +189,27 @@ function addActionNameInCommit(commitData: string) {
   return JSON.stringify(commitJson);
 }
 
+function addLicenseInAssetTree(assetTree: {[key: string]: any}, assetLicense?: string | undefined) {
+  if (assetLicense) {
+    if (license.isSupportedLicense(assetLicense)) {
+      assetTree.license = license.Licenses[assetLicense];
+    } else {
+      console.error(`Get unsupported license: ${assetLicense}\n`);
+    }
+  }
+}
+
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
                                                            assetMimetype,
                                                            assetTimestampCreated,
                                                            assetCreator,
-                                                           assetLicense="cc-by-nc",
+                                                           assetLicense: string | undefined = undefined,
                                                            assetAbstract="") {
   let stagingAssetTree = await createAssetTreeBaseRemote(assetBytes, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreator;
-  stagingAssetTree.license = license.Licenses[assetLicense];
   stagingAssetTree.abstract = assetAbstract;
+  addLicenseInAssetTree(stagingAssetTree, assetLicense);
   return stagingAssetTree;
 }
 
@@ -208,13 +218,13 @@ export async function createAssetTreeInitialRegister(assetCid,
                                                      assetMimetype,
                                                      assetTimestampCreated,
                                                      assetCreator,
-                                                     assetLicense="cc-by-nc",
+                                                     assetLicense: string | undefined = undefined,
                                                      assetAbstract="") {
   let stagingAssetTree = await createAssetTreeBase(assetCid, assetSha256, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreator;
-  stagingAssetTree.license = license.Licenses[assetLicense];
   stagingAssetTree.abstract = assetAbstract;
+  addLicenseInAssetTree(stagingAssetTree, assetLicense);
   return stagingAssetTree;
 }
 
