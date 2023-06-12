@@ -1,4 +1,4 @@
-/* manual test: yarn run mocha -r ts-node/register tests/testNit.ts
+/* manual test: yarn run test tests/testNit.ts
  */
 
 import fs = require("fs");

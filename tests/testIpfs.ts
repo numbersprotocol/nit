@@ -1,4 +1,4 @@
-/* manual test: ./node_modules/mocha/bin/mocha -r ts-node/register --timeout 10000 tests/testIpfs.ts
+/* manual test: yarn run test --timeout 10000 tests/testIpfs.ts
  */
 
 import fs = require("fs");

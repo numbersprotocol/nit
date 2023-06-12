@@ -1,4 +1,4 @@
-/* manual test: ./node_modules/mocha/bin/mocha -r ts-node/register --timeout 10000 tests/testAction.ts
+/* manual test: yarn run test --timeout 10000 tests/testAction.ts
  */
 
 import { expect } from "chai";

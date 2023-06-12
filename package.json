@@ -27,8 +27,8 @@
     "dev-global-uninstall": "yarn global remove @numbersprotocol/nit",
     "dev-install": "yarn run build && yarn add file:$PWD",
     "dev-uninstall": "yarn remove @numbersprotocol/nit && yarn run clean",
-    "test": "mocha -r ts-node/register tests/**/*.ts",
-    "test-single": "mocha -r ts-node/register"
+    "tests": "mocha -r ts-node/register tests/**/*.ts",
+    "test": "mocha -r ts-node/register"
   },
   "bin": "bin/nit.js",
   "devDependencies": {
