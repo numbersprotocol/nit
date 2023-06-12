@@ -199,17 +199,23 @@ function addLicenseInAssetTree(assetTree: {[key: string]: any}, assetLicense?: s
   }
 }
 
+function addAbstractInAssetTree(assetTree: {[key: string]: any}, assetAbstract?: string | undefined) {
+  if (assetAbstract !== undefined) {
+    assetTree.abstract = assetAbstract;
+  }
+}
+
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
                                                            assetMimetype,
                                                            assetTimestampCreated,
                                                            assetCreator,
                                                            assetLicense: string | undefined = undefined,
-                                                           assetAbstract="") {
+                                                           assetAbstract: string | undefined = undefined) {
   let stagingAssetTree = await createAssetTreeBaseRemote(assetBytes, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreator;
-  stagingAssetTree.abstract = assetAbstract;
   addLicenseInAssetTree(stagingAssetTree, assetLicense);
+  addAbstractInAssetTree(stagingAssetTree, assetAbstract);
   return stagingAssetTree;
 }
 
@@ -219,12 +225,12 @@ export async function createAssetTreeInitialRegister(assetCid,
                                                      assetTimestampCreated,
                                                      assetCreator,
                                                      assetLicense: string | undefined = undefined,
-                                                     assetAbstract="") {
+                                                     assetAbstract: string | undefined = undefined) {
   let stagingAssetTree = await createAssetTreeBase(assetCid, assetSha256, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreator;
-  stagingAssetTree.abstract = assetAbstract;
   addLicenseInAssetTree(stagingAssetTree, assetLicense);
+  addAbstractInAssetTree(stagingAssetTree, assetAbstract);
   return stagingAssetTree;
 }
 
