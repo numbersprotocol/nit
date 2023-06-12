@@ -38,11 +38,7 @@ export const Licenses = {
   },
 };
 
-<<<<<<< Updated upstream
 export const DefaultLicense: string = "cc-by-nc-4.0";
-=======
-export const DefaultLicense = "cc-by-nc";
->>>>>>> Stashed changes
 
 export function isSupportedLicense(licenseName: string) {
   if (Object.keys(Licenses).indexOf(licenseName) > -1) {

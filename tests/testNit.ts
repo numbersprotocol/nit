@@ -68,4 +68,37 @@ describe("Nit", function() {
 
     await expect(stagingAssetTree.license).to.be.undefined;
   });
+
+  it(".. should add an abstract successfully", async function () {
+    gaiAssetTree.abstract = "";
+
+    const stagingAssetTree = await nit.createAssetTreeInitialRegister(
+      gaiAssetTree.assetCid,
+      gaiAssetTree.assetSha256,
+      gaiAssetTree.encodingFormat,
+      gaiAssetTree.assetTimestampCreated,
+      gaiAssetTree.assetCreator,
+      "cc-by-nc-nd-4.0",
+      gaiAssetTree.abstract
+    );
+
+    await expect(stagingAssetTree.abstract).to.be.equal("");
+  });
+
+  /* TODO: For the key with null or undefined, should we keep the key or remove it?
+   * We remove the key for now.
+   */
+  it(".. should add an invalid abstract without breaking program", async function () {
+    const stagingAssetTree = await nit.createAssetTreeInitialRegister(
+      gaiAssetTree.assetCid,
+      gaiAssetTree.assetSha256,
+      gaiAssetTree.encodingFormat,
+      gaiAssetTree.assetTimestampCreated,
+      gaiAssetTree.assetCreator,
+      "cc-by-nc-nd-4.0",
+      undefined
+    );
+
+    await expect(stagingAssetTree.abstract).to.be.undefined;
+  });
 });
