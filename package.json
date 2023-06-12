@@ -27,8 +27,14 @@
     "dev-global-uninstall": "yarn global remove @numbersprotocol/nit",
     "dev-install": "yarn run build && yarn add file:$PWD",
     "dev-uninstall": "yarn remove @numbersprotocol/nit && yarn run clean",
+<<<<<<< Updated upstream
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "test-single": "mocha -r ts-node/register"
+=======
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
+    "test-single": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register",
+    "lint": "eslint --ext .ts ."
+>>>>>>> Stashed changes
   },
   "bin": "bin/nit.js",
   "devDependencies": {
