@@ -1,28 +1,30 @@
-/* Reference: https://pypi.org/classifiers/
-              https://spdx.org/licenses/
+/* References:
+ *   https://spdx.org/licenses/
+ *   https://pypi.org/classifiers/
  */
+
 export const Licenses = {
-  "cc-by": {
+  "cc-by-4.0": {
     "name": "CC-BY-4.0",
     "document": "https://creativecommons.org/licenses/by/4.0/legalcode"
   },
-  "cc-by-sa": {
+  "cc-by-sa-4.0": {
     "name": "CC-BY-SA-4.0",
     "document": "https://creativecommons.org/licenses/by-sa/4.0/legalcode"
   },
-  "cc-by-nd": {
+  "cc-by-nd-4.0": {
     "name": "CC-BY-ND-4.0",
     "document": "https://creativecommons.org/licenses/by-nd/4.0/legalcode"
   },
-  "cc-by-nc": {
+  "cc-by-nc-4.0": {
     "name": "CC-BY-NC-4.0",
     "document": "https://creativecommons.org/licenses/by-nc/4.0/legalcode"
   },
-  "cc-by-nc-sa": {
+  "cc-by-nc-sa-4.0": {
     "name": "CC-BY-NC-SA-4.0",
     "document": "https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode"
   },
-  "cc-by-nc-nd": {
+  "cc-by-nc-nd-4.0": {
     "name": "CC-BY-NC-ND-4.0",
     "document": "https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode"
   },
@@ -36,7 +38,7 @@ export const Licenses = {
   },
 };
 
-export const DefaultLicense: string = "cc-by-nc";
+export const DefaultLicense: string = "cc-by-nc-4.0";
 
 export function isSupportedLicense(licenseName: string) {
   if (Object.keys(Licenses).indexOf(licenseName) > -1) {
