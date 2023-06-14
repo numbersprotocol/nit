@@ -209,6 +209,58 @@ Asset Tree difference
 ```
 </details>
 
+### Get merge of Commits and Asset Trees of an Asset
+
+```shell
+nit merge <asset-cid> --from-index 3 --to-index 5
+```
+
+Example command of the mockup Asset
+
+```shell
+nit merge aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --from-index 71 --to-index 73
+```
+
+<details>
+<summary>Merge of Commits and Asset Trees in block 71 & 72 (exclude block 73)</summary>
+
+```shell
+from: block 10849040, tx 0x6d5902173255afe379cc4ae934a6c684ecfd865679286665622de3cf10eddcbe
+  to: block 10849133, tx 0xe383fdc0f4eaf44e8bde4737f33bcd45742dcb846f3beb890976793d7cc9358e
+
+Commit merge
+{
+  "assetTreeCid": "bafkreidptwydheqfybug4mmnzwzdg4rqxjvg4akl2pwjmrfxhqz33qv4tu",
+  "assetTreeSha256": "6f9db0339205c0686e318dcdb2337230ba6a6e014bd3ec9644b73c33bdc2bc9d",
+  "assetTreeSignature": "0xef547e124a9904dbdb5a418022ad03c621201b74111a3b4c5fac61b1d82350170766cef8a27737d21ca9b1bd4e04f7cdea460706b68b14e0ed17f2a3de83f9131b",
+  "author": "bafkreigzixvzu2tbxbvmvwcvlz2zwoagmb6c2q5egaq4lmd5sesyopmmx4",
+  "committer": "bafkreigzixvzu2tbxbvmvwcvlz2zwoagmb6c2q5egaq4lmd5sesyopmmx4",
+  "provider": "bafkreigtmno2wacf4ldb6ewbkboe7oojedsp3dky35djytor6guwzhbdpa",
+  "timestampCreated": 1655720763,
+  "action": "bafkreiavifzn7ntlb6p2lr55k3oezo6pofwvknecukc5auhng4miowcte4",
+  "actionResult": "https://bafkreidptwydheqfybug4mmnzwzdg4rqxjvg4akl2pwjmrfxhqz33qv4tu.ipfs.dweb.link",
+  "abstract": "Action action-initial-registration."
+}
+
+Asset Tree merge
+{
+  "assetCid": "bafybeif3ctgbmiso4oykvwj6jebyrkjxqr26bfrkesla5yr2ypgx47wgle",
+  "assetSha256": null,
+  "encodingFormat": "application/zip",
+  "assetTimestampCreated": null,
+  "assetCreator": null,
+  "license": {
+    "name": "Starling License",
+    "document": "https://starlinglab.org"
+  },
+  "abstract": "",
+  "assetTreeCustomKey1": "foo",
+  "assetTreeCustomKey2": "bar",
+  "nftRecord": "bafkreielfjf7sfxigb4r7tejt7jhl6kthxoujwziywixlwxjjho32may7y"
+}
+```
+</details>
+
 ## Configuration
 
 The Nit configuration mimics the [Hardhat configuration](https://hardhat.org/config) with additional fields.
@@ -292,7 +344,9 @@ nit config -e
   "infura": {
     "projectId": "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "projectSecret": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  }
+  },
+  // For IPFS cat source. We support w3s, infura and numbers
+  "ipfsCat": "w3s",
 }
 ```
 

@@ -13,6 +13,10 @@ export function deepCopy(data) {
   return JSON.parse(JSON.stringify(data));
 }
 
+export function mergeJsons(jsonArray: object[]): object {
+  return Object.assign({}, ...jsonArray);
+}
+
 export function timestampToIsoString(timestamp): string {
   try {
     return new Date((parseInt(timestamp) * 1000)).toISOString()
