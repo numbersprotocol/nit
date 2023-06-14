@@ -614,6 +614,14 @@ async function main() {
       console.log(`Commit Tx: ${commitResult.hash}`);
       console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
 
+      try {
+        // Wait for the transaction to be mined
+        const transactionReceipt = await commitResult.wait();
+        console.log(`Block Number: ${transactionReceipt.blockNumber}`);
+      } catch (error) {
+        console.error(`Transaction error: ${error}`);
+      }
+
       // Reset stage
       await setWorkingAssetCid("");
 
