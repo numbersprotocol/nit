@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To check the difference between the last releaes and the latest dev status, click the link above.
 
+## [1.5.0] - 2023-06-15
+
+### Changed
+
+1. [PR26](https://github.com/numbersprotocol/nit/pull/26): Remove default license from Asset Tree
+1. [PR27](https://github.com/numbersprotocol/nit/pull/27): Remove default empty abstract without input
+
 ## [1.4.0] - 2023-05-02
 
 ### Added
@@ -37,7 +44,8 @@ To check the difference between the last releaes and the latest dev status, clic
 
 1. Change default network in registration action from Avalanche to Jade
 
-[unreleased]: https://github.com/numbersprotocol/capture-lite/compare/1.4.0...HEAD
+[unreleased]: https://github.com/numbersprotocol/capture-lite/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/numbersprotocol/capture-lite/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/numbersprotocol/capture-lite/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/numbersprotocol/capture-lite/compare/1.2.9...1.3.0
 [1.2.9]: https://github.com/numbersprotocol/capture-lite/releases/tag/1.2.9
