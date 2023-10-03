@@ -37,6 +37,17 @@ export const ActionSet = {
       "type": "new"
     }
   },
+  "action-initial-registration-iota": {
+    nid: "bafkreibnyl3ohbx76rzxmdzfyayvztjcqgjv745wh4t3z6a4ung43xd554",
+    content: {
+      "networkActionName": "initial registration",
+      "blockchain": "iota",
+      "tokenAddress": "",
+      "provider": "bafkreigrt5tepycewppysdwcjccdkdvvc2ztelqv64idgautq52g3vfh4i",
+      "abstract": "Register asset to the Numbers network",
+      "type": "new"
+    }
+  },
 
   "action-commit": {
     nid: "bafkreiceiqfe4w4g4j46rsi4h4tbqu35ivewfxm4q743tfmegscpg7d63m",
