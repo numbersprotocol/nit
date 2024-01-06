@@ -127,7 +127,7 @@ const configurableAssetTreeKeys = [
 async function createAssetTreeBaseRemote(assetByes, assetMimetype) {
   let stagingAssetTree: any = {};
   try {
-    stagingAssetTree.assetCid = await ipfs.infuraIpfsAddBytes(assetByes);
+    stagingAssetTree.assetCid = await ipfs.ipfsAddBytes(assetByes);
     // remove leading 0x to as the same as most sha256 tools
     stagingAssetTree.assetSha256 = (await ethers.utils.sha256(assetByes)).substring(2);
     stagingAssetTree.encodingFormat = assetMimetype;
@@ -155,7 +155,7 @@ async function createCommitBase(signer, assetTree, authorAddress, providerCid) {
   let stagingCommit: any = {};
 
   const assetTreeBytes = Buffer.from(JSON.stringify(assetTree, null, 2));
-  stagingCommit.assetTreeCid = await ipfs.infuraIpfsAddBytes(assetTreeBytes);
+  stagingCommit.assetTreeCid = await ipfs.ipfsAddBytes(assetTreeBytes);
   stagingCommit.assetTreeSha256 = (await ethers.utils.sha256(Buffer.from(JSON.stringify(assetTree, null, 2)))).substring(2);
   // remove leading 0x to as the same as most sha256 tools
   stagingCommit.assetTreeSignature = await signIntegrityHash(stagingCommit.assetTreeSha256, signer);
@@ -167,17 +167,55 @@ async function createCommitBase(signer, assetTree, authorAddress, providerCid) {
   return stagingCommit;
 }
 
+/* Hidden rule: add actionName in commitData
+ *
+ * Check actionName is sent in commitData,
+ *   if exist, use the actionName defined by the App,
+ *   if not exist, check the given Action Nid (the action field in commitData),
+ *     if valid, use the mapped actionName
+ *     if invalid, use the default actionName "action-commit"
+ */
+function addActionNameInCommit(commitData: string) {
+  const commitJson = JSON.parse(commitData);
+  if (!commitJson.hasOwnProperty("actionName")) {
+    if (commitJson.hasOwnProperty("action")) {
+      const nid = commitJson["action"];
+      const key = action.getNameByNid(nid);
+      commitJson["actionName"] = key;
+    } else {
+      commitJson["actionName"] = "action-commit";
+    }
+  }
+  return JSON.stringify(commitJson);
+}
+
+function addLicenseInAssetTree(assetTree: {[key: string]: any}, assetLicense?: string | undefined) {
+  if (assetLicense) {
+    if (license.isSupportedLicense(assetLicense)) {
+      assetTree.license = license.Licenses[assetLicense];
+    } else {
+      console.error(`Get unsupported license: ${assetLicense}\n`);
+    }
+  }
+}
+
+function addAbstractInAssetTree(assetTree: {[key: string]: any}, assetAbstract?: string | undefined) {
+  if (assetAbstract !== undefined) {
+    assetTree.abstract = assetAbstract;
+  }
+}
+
 export async function createAssetTreeInitialRegisterRemote(assetBytes,
                                                            assetMimetype,
                                                            assetTimestampCreated,
                                                            assetCreator,
-                                                           assetLicense="cc-by-nc",
-                                                           assetAbstract="") {
+                                                           assetLicense: string | undefined = undefined,
+                                                           assetAbstract: string | undefined = undefined) {
   let stagingAssetTree = await createAssetTreeBaseRemote(assetBytes, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreator;
-  stagingAssetTree.license = license.Licenses[assetLicense];
-  stagingAssetTree.abstract = assetAbstract;
+  addLicenseInAssetTree(stagingAssetTree, assetLicense);
+  addAbstractInAssetTree(stagingAssetTree, assetAbstract);
   return stagingAssetTree;
 }
 
@@ -186,13 +224,13 @@ export async function createAssetTreeInitialRegister(assetCid,
                                                      assetMimetype,
                                                      assetTimestampCreated,
                                                      assetCreator,
-                                                     assetLicense="cc-by-nc",
-                                                     assetAbstract="") {
+                                                     assetLicense: string | undefined = undefined,
+                                                     assetAbstract: string | undefined = undefined) {
   let stagingAssetTree = await createAssetTreeBase(assetCid, assetSha256, assetMimetype);
   stagingAssetTree.assetTimestampCreated= assetTimestampCreated;
   stagingAssetTree.assetCreator = assetCreator;
-  stagingAssetTree.license = license.Licenses[assetLicense];
-  stagingAssetTree.abstract = assetAbstract;
+  addLicenseInAssetTree(stagingAssetTree, assetLicense);
+  addAbstractInAssetTree(stagingAssetTree, assetAbstract);
   return stagingAssetTree;
 }
 
@@ -278,12 +316,13 @@ export async function pull(assetCid: string, blockchainInfo) {
 //}
 
 export async function commit(assetCid: string, commitData: string, blockchainInfo) {
+  const commitString = addActionNameInCommit(commitData);
   let r;
   if (blockchainInfo.gasPrice != null) {
     console.log(`Gas Price: ${blockchainInfo.gasPrice} Wei`);
-    r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit, gasPrice: blockchainInfo.gasPrice });
+    r = await blockchainInfo.contract.commit(assetCid, commitString, { gasLimit: blockchainInfo.gasLimit, gasPrice: blockchainInfo.gasPrice });
   } else {
-    r = await blockchainInfo.contract.commit(assetCid, commitData, { gasLimit: blockchainInfo.gasLimit });
+    r = await blockchainInfo.contract.commit(assetCid, commitString, { gasLimit: blockchainInfo.gasLimit });
   }
   return r;
 }
@@ -357,8 +396,8 @@ export async function difference(assetCid: string, blockchainInfo, fromIndex: nu
   const commits = await getCommits(commitEvents);
   const fromCommit = commits[0];
   const toCommit = commits[commits.length - 1];
-  const fromAssetTree = JSON.parse((await ipfs.infuraIpfsCat(fromCommit.commit.assetTreeCid)).toString());
-  const toAssetTree = JSON.parse((await ipfs.infuraIpfsCat(toCommit.commit.assetTreeCid)).toString());
+  const fromAssetTree = JSON.parse((await ipfs.ipfsCat(fromCommit.commit.assetTreeCid)).toString());
+  const toAssetTree = JSON.parse((await ipfs.ipfsCat(toCommit.commit.assetTreeCid)).toString());
   const commitDiff = {
     "fromIndex": fromIndex,
     "fromBlockNumber": fromCommit.blockNumber,
@@ -381,7 +420,7 @@ export async function getLatestCommitSummary(assetCid, blockchainInfo) {
 }
 
 export async function getAssetTree(assetTreeCid) {
-  const assetTreeBytes = await ipfs.infuraIpfsCat(assetTreeCid);
+  const assetTreeBytes = await ipfs.ipfsCat(assetTreeCid);
   const assetTree = JSON.parse(assetTreeBytes.toString());
   return assetTree;
 }

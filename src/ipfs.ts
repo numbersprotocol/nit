@@ -53,9 +53,30 @@ export async function infuraIpfsCat(cid) {
   return r.rawBody;
 }
 
+export async function w3sIpfsCat(cid) {
+  const url = `https://${cid}.ipfs.w3s.link`;
+  const requestConfig = {
+    timeout: { request: 30000 },
+  }
+  /* FIXME: Axios's response.data.lenght is smaller than content length.
+   * Use Got as a temporary workardound.
+   * https://github.com/axios/axios/issues/3711
+   */
+  const r = await got.get(url, requestConfig);
+  return r.rawBody;
+}
+
+export async function ipfsAddBytes(bytes) {
+  return await infuraIpfsAddBytes(bytes);
+}
+
+export async function ipfsCat(cid) {
+  return await w3sIpfsCat(cid);
+}
+
 export async function cidToJsonString(cid) {
   try {
-    const cidContentBytes = await infuraIpfsCat(cid);
+    const cidContentBytes = await ipfsCat(cid);
     return cidContentBytes.toString();
   } catch(error) {
     console.error(`Failed to download content of CID ${cid}`);

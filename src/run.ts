@@ -410,7 +410,7 @@ async function assetSourceToBytes(source) {
   let assetBytes;
   if (source.substring(0, 4) === "bafy") {
     console.log("source cid");
-    assetBytes = await ipfs.infuraIpfsCat(source);
+    assetBytes = await ipfs.ipfsCat(source);
   } else if (source.substring(0, 4) === "http") {
     console.log("source http");
     assetBytes = (await got.get(source, { timeout: { request: 30000 } })).rawBody;
@@ -457,7 +457,7 @@ async function main() {
 
   if (args.command === "ipfsadd") {
     const contentBytes = fs.readFileSync(args.params.fileapth);
-    const assetCid = await ipfs.infuraIpfsAddBytes(contentBytes);
+    const assetCid = await ipfs.ipfsAddBytes(contentBytes);
     console.log(`Command ipfsadd result (Asset CID): ${assetCid}`);
   } else if (args.command === "addv1") {
     const assetTreeFileContent = fs.readFileSync(args.params.filepath, "utf-8");
@@ -476,7 +476,7 @@ async function main() {
 
     // Get assetTreeCid and encodingFormat
     const contentBytes = fs.readFileSync(`${commitDir}/assetTree.json`);
-    const assetCid= await ipfs.infuraIpfsAddBytes(contentBytes);
+    const assetCid= await ipfs.ipfsAddBytes(contentBytes);
 
     // Get assetTreeSha256
     const assetTreeSha256 = sha256(assetTreeFileContent);
@@ -506,7 +506,7 @@ async function main() {
 
     let assetCid;
     if ("mockup" in args.params === false) {
-      assetCid = await ipfs.infuraIpfsAddBytes(assetBytes);
+      assetCid = await ipfs.ipfsAddBytes(assetBytes);
     } else {
       assetCid = "a".repeat(nit.cidv1Length);
     }

@@ -1,13 +1,13 @@
-```
+```dbml
 Project IntegrityRecord {
   Note: '''
   description: Numbers Protocol Integrity Record spec
-  version: 4.0.0
-  date: 2022-08-25
+  version: 4.3.0
+  date: 2023-05-11
   colors:
     - purple: on blockchain (updatable)
     - blue: files on IPFS (updatable)
-    - yello: json
+    - yellow: json
     - red: signature related
     - grey: centralized server or DID
   '''
@@ -19,13 +19,13 @@ Table commit [headercolor: #8e44ad] {
   assetTreeCid cid [note: 'CID of the asset Tree file']
   assetTreeSha256 sha256 [note: 'sha256sum of the asset Tree file']
   assetTreeSignature signature [note: 'EIP-191 signature signed by author.']
-  author address [note: 'Who creates the commit.']
-  committer address [note: 'Who registers the commit.']
-  action cid [note: 'CID of the network action performed for the asset file.']
-  actionResultUri str [note: 'Result uri of this action']
+  committer address [note: 'Who registers the commit']
+  author address [note: 'Who write the commit']
+  action cid [note: 'CID of the action profile describing the action details including actionName.']
+  actionName str [note: 'name of the action, unique string']
+  actionResult str [note: 'Result uri of this action']
   provider cid [note: 'CID of the commit service provider.']
-  abstract str [note: 'Committer can add a short description that summarizes the Integrity Record.']
-  timestampCreated timestamp [note: 'The moment that Integrity Record is created in Unix timestamp']
+  attachment str [note: 'the Nid of the attachment file.']
 
   Note: '''
   1. The goal of Integrity Record is to ensure integrity of the raw asset and its derivatives like metadata and maybe the major asset.
@@ -67,14 +67,22 @@ Table assetTree [headercolor: #3498db] {
   _ none [note: 'placeholder for linking tables']
   assetCid cid [note: 'CID of the asset file (blob)']
   assetSha256 sha256 [note: 'sha256sum of the asset file (blob)']
-  assetCreator address [note: 'Creator\'s wallet address']
-  assetCreatorProfile cid [note: 'Creator of the asset file']
+  encodingFormat str [note: 'The asset\'s type expressed using a MIME format.']
+  assetCreator str [note: 'Creator\'s name']
+  creatorProfile cid [note: 'Creator of the asset file']
+  creatorWallet address [note: 'Creator\'s wallet address']
   assetTimestampCreated timestamp [note: 'Creation time of the asset file']
+  assetLocationCreated str [note: 'Creation location of the asset file']
+  parentAssetCid cid [note: 'Cid of the parent asset']
+  generatedBy str [note: 'AI model used to generate the content']
+  generatedThrough str [note: 'URL of AI service']
+  usedBy str [note: 'URL of the website that uses the asset']
   license license [note: 'license of the asset file']
-  nftRecord cid
+  nftRecord "nftRecord[]" [note: 'List of NFT records']
   integrityCid cid [note: 'CID of the integrity proof']
   abstract str [note: 'description of this asset']
-  encodingFormat str [note: 'The asset\'s type expressed using a MIME format.']
+  custom json [note: 'custom fields']
+
 
   Note: '''
   EIP-191 Verification
@@ -109,7 +117,6 @@ Table nftRecord [headercolor: #3498db] {
   network network [note: 'network of the NFT token']
   contractAddress address
   tokenId str
-  tokenUri str
 }
 
 Table nft [headercolor: #8e44ad] {
@@ -207,10 +214,9 @@ Enum "proofKey" {
 }
 
 Ref: "nftRecord"."tokenId" - "nft"."tokenId"
-Ref: "nftRecord"."tokenUri" - "nft".tokenUri
 Ref: "assetTree"."license" - "license"."_"
 Ref: "assetTree"."integrityCid" - "proofMetadata"."_"
-Ref: "assetTree"."assetCreatorProfile" - "identity"."_"
+Ref: "assetTree"."creatorProfile" - "identity"."_"
 Ref: "assetTree".nftRecord < nftRecord."_" // One asset can link to multiple nft_records
 Ref: "commit"."action" - "action"."_"
 Ref: "commit"."provider" - "identity"."_"
