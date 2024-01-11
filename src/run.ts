@@ -609,10 +609,14 @@ async function main() {
       } else {
         commitEventIndexCid = nit.assetCidMock;
       }
-      const commitResult = await nit.commit(commitEventIndexCid, JSON.stringify(commitData), blockchain);
 
-      console.log(`Commit Tx: ${commitResult.hash}`);
-      console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${commitResult.hash}`);
+      try {
+        const transactionReceipt = await nit.commit(commitEventIndexCid, JSON.stringify(commitData), blockchain);
+        console.log(`Commit Tx: ${transactionReceipt.transactionHash}`);
+        console.log(`Commit Explorer: ${blockchain.explorerBaseUrl}/${transactionReceipt.transactionHash}`);
+      } catch (error) {
+        console.error(`Transaction error: ${error}`);
+      }
 
       // Reset stage
       await setWorkingAssetCid("");

@@ -315,7 +315,7 @@ export async function pull(assetCid: string, blockchainInfo) {
 //  }
 //}
 
-export async function commit(assetCid: string, commitData: string, blockchainInfo) {
+export async function commit(assetCid: string, commitData: string, blockchainInfo, confirms: number = 1) {
   const commitString = addActionNameInCommit(commitData);
   let r;
   if (blockchainInfo.gasPrice != null) {
@@ -324,7 +324,9 @@ export async function commit(assetCid: string, commitData: string, blockchainInf
   } else {
     r = await blockchainInfo.contract.commit(assetCid, commitString, { gasLimit: blockchainInfo.gasLimit });
   }
-  return r;
+
+  // Wait for the transaction to be mined
+  return await r.wait(confirms);
 }
 
 export async function log(assetCid: string, blockchainInfo, fromIndex: number, toIndex: number = null) {
