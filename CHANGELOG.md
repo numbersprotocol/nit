@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To check the difference between the last releaes and the latest dev status, click the link above.
 
+## [1.6.1] - 2024-01-11
+
+### Fixed
+
+1. Commit will wait until transaction is mined. (#29)
+
 ## [1.6.0] - 2023-10-03
 
 ### Added
@@ -50,7 +56,8 @@ To check the difference between the last releaes and the latest dev status, clic
 
 1. Change default network in registration action from Avalanche to Jade
 
-[unreleased]: https://github.com/numbersprotocol/capture-lite/compare/1.6.0...HEAD
+[unreleased]: https://github.com/numbersprotocol/capture-lite/compare/1.6.1...HEAD
+[1.6.1]: https://github.com/numbersprotocol/capture-lite/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/numbersprotocol/capture-lite/compare/1.5.0...1.6.0
 [1.5.0]: https://github.com/numbersprotocol/capture-lite/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/numbersprotocol/capture-lite/compare/1.3.0...1.4.0
