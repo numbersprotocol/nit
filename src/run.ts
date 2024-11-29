@@ -121,6 +121,7 @@ async function help() {
         "verify    Verify integrity signature",
         "log       Show asset's commits",
         "diff      Show diff between two commits",
+        "merge     Show merged assetTree",
         "help      Show this usage tips",
       ]
     },
@@ -252,6 +253,14 @@ async function help() {
         "$ nit diff {underline assetCid} --from|-f {underline blockNumberIndex} --to|-t {underline blockNumberIndex}",
       ]
     },
+    {
+      header: "merge",
+      content: [
+        "$ nit merge {underline assetCid}",
+        "$ nit merge {underline assetCid} --from-index|-f {underline blockNumberIndex}",
+        "$ nit merge {underline assetCid} --from-index|-f {underline blockNumberIndex} --to-index|-t {underline blockNumberIndex}",
+      ]
+    },
   ]
   const usage = commandLineUsage(sections)
   console.log(usage)
@@ -377,6 +386,18 @@ async function parseArgs() {
       "command": "diff",
       "params": paramOptions
     }
+  } else if (commandOptions.command === "merge") {
+    const paramDefinitions = [
+      { name: "asset-cid", defaultOption: true },
+      { name: "from-index", alias: "f", defaultValue: 0 },
+      { name: "to-index", alias: "t", defaultValue: -1 },
+    ];
+    const paramOptions = commandLineArgs(paramDefinitions,
+                                         { argv, stopAtFirstUnknown: true });
+    return {
+      "command": "merge",
+      "params": paramOptions
+    }
   } else if (commandOptions.command === "config") {
     const paramDefinitions = [
       { name: "edit", alias: "e" },
@@ -454,6 +475,7 @@ async function main() {
   const blockchain = await nit.loadBlockchain(config);
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
+  await ipfs.initIpfsCat(config.ipfsCat);
 
   if (args.command === "ipfsadd") {
     const contentBytes = fs.readFileSync(args.params.fileapth);
@@ -702,6 +724,20 @@ async function main() {
 
       console.log("\nAsset Tree difference");
       await nit.showCommmitDiff(diff.assetTreeDiff);
+    } else {
+      await help();
+    }
+  } else if (args.command === "merge") {
+    if ("asset-cid" in args.params) {
+      const result = await nit.merge(args.params["asset-cid"], blockchain, args.params["from-index"], args.params["to-index"]);
+      console.log(`from: block ${result.fromBlockNumber}, tx ${result.fromTransactionHash}`);
+      console.log(`  to: block ${result.toBlockNumber}, tx ${result.toTransactionHash}`);
+
+      console.log("\nCommit merge");
+      console.log(JSON.stringify(result.commitMerge, null, 2));
+
+      console.log("\nAsset Tree merge");
+      console.log(JSON.stringify(result.assetTreeMerge, null, 2));
     } else {
       await help();
     }

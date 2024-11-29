@@ -11,6 +11,8 @@ let ProjectSecret = "";
 
 let EstuaryInstance;
 
+let IpfsCatFunc = w3sIpfsCat;
+
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
   ProjectSecret = projectSecret;
@@ -66,12 +68,25 @@ export async function w3sIpfsCat(cid) {
   return r.rawBody;
 }
 
+export async function numbersIpfsCat(cid) {
+  const url = `https://ipfs-pin.numbersprotocol.io/ipfs/${cid}`;
+  const requestConfig = {
+    timeout: { request: 30000 },
+  }
+  /* FIXME: Axios's response.data.lenght is smaller than content length.
+   * Use Got as a temporary workardound.
+   * https://github.com/axios/axios/issues/3711
+   */
+  const r = await got.get(url, requestConfig);
+  return r.rawBody;
+}
+
 export async function ipfsAddBytes(bytes) {
   return await infuraIpfsAddBytes(bytes);
 }
 
 export async function ipfsCat(cid) {
-  return await w3sIpfsCat(cid);
+  return await IpfsCatFunc(cid);
 }
 
 export async function cidToJsonString(cid) {
@@ -106,5 +121,15 @@ export async function estuaryAdd(bytes) {
     return cid;
   } catch(error) {
     console.error(error);
+  }
+}
+
+export async function initIpfsCat(source: string) {
+  if (source == "numbers") {
+    IpfsCatFunc = numbersIpfsCat;
+  } else if(source == "infura") {
+    IpfsCatFunc = infuraIpfsCat;
+  } else {
+    IpfsCatFunc = w3sIpfsCat;
   }
 }

@@ -76,6 +76,8 @@ export const nitconfigTemplate = {
     "projectId": "a".repeat(infuraSecretLength),
     "projectSecret": "a".repeat(infuraSecretLength)
   },
+  /* IPFS cat source. E.g. w3s, infura or numbers */
+  "ipfsCat": "w3s",
   "commitDatabase": {
     "updateUrl": "",
     "commitUrl": "",
@@ -521,6 +523,46 @@ export async function getCommitsSummary(events) {
     return summary;
   });
   return commitsSummary;
+}
+
+export async function merge(assetCid: string, blockchainInfo, fromIndex: number = 0, toIndex: number = -1) {
+  let confirmedToIndex = toIndex;
+  if (toIndex <= fromIndex) {
+    const commitBlockNumbers = await getCommitBlockNumbers(assetCid, blockchainInfo);
+    const commitAmount: number = commitBlockNumbers.length;
+    confirmedToIndex = commitAmount;
+  }
+
+  const commitEvents = await iterateCommitEvents(assetCid, blockchainInfo, fromIndex, confirmedToIndex);
+  const commits:  { commit: object; blockNumber: number; transactionHash: string; }[] = await getCommits(commitEvents);
+  let assetTrees = []
+  for (let i = 0; i < commits.length; i += 10) {
+    assetTrees = [...assetTrees, ...await Promise.all(commits.slice(i, i + 10).map(
+      (async (commit) => {
+        if ("assetTreeCid" in commit.commit) {
+          try {
+            return await getAssetTree(commit.commit["assetTreeCid"]);
+          } catch (error) {
+            console.error(`Cannot get valid assetTree from block ${commit.blockNumber}`);
+          }
+        }
+        return {};
+      })
+    ))];
+  }
+
+  const fromCommit = commits[0];
+  const toCommit = commits[commits.length - 1];
+  return {
+    "fromIndex": fromIndex,
+    "fromBlockNumber": fromCommit?.blockNumber,
+    "fromTransactionHash": fromCommit?.transactionHash,
+    "toIndex": toIndex,
+    "toBlockNumber": toCommit?.blockNumber,
+    "toTransactionHash": toCommit?.transactionHash,
+    "commitMerge": util.mergeJsons(commits.map(commit => commit.commit)),
+    "assetTreeMerge": util.mergeJsons(assetTrees),
+  };
 }
 
 /* TODO: Remove this function in the next feature release.
