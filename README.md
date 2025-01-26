@@ -4,7 +4,7 @@ Nit is git for web3 digital assets and helps users to commit an asset's activiti
 
 ## Why Nit
 
-To make digital assets trustworthy and traceable, Nit leverages web3 technologies and Git core concepts. Everyone can chronicle their assets by creating on-chain records so that we can productively debate, narrate, and analyse. All asset histories are written on chain and are searchable by asset CID. A sample transaction can be found [here](https://snowtrace.io/tx/0x3ba2c36f7b0aeefc954041899a099c228e052a791a59f9922ab53ef9630f4a87).
+To make digital assets trustworthy and traceable, Nit leverages web3 technologies and Git core concepts. Everyone can chronicle their assets by creating on-chain records so that we can productively debate, narrate, and analyze. All asset histories are written on chain and are searchable by asset CID. A sample transaction can be found [here](https://snowtrace.io/tx/0x3ba2c36f7b0aeefc954041899a099c228e052a791a59f9922ab53ef9630f4a87).
 
 Case study
 
@@ -29,7 +29,7 @@ yarn global add @numbersprotocol/nit
 
 ## Example: Initial Registration
 
-If it's your first time to run `nit`, initialize Nit with default configuration:
+If it's your first time running `nit`, initialize Nit with default configuration:
 
 ```
 nit init
