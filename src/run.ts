@@ -454,6 +454,11 @@ async function main() {
   const blockchain = await nit.loadBlockchain(config);
 
   await ipfs.initInfura(config.infura.projectId, config.infura.projectSecret);
+  
+  // Initialize Numbers Protocol IPFS with Capture Token if available
+  if (config.numbersProtocol && config.numbersProtocol.captureToken) {
+    await ipfs.initNumbersProtocol(config.numbersProtocol.captureToken);
+  }
 
   if (args.command === "ipfsadd") {
     const contentBytes = fs.readFileSync(args.params.fileapth);
