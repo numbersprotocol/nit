@@ -11,6 +11,7 @@ let ProjectSecret = "";
 
 let EstuaryInstance;
 let NumbersProtocolCaptureToken = ""; // Store the Capture Token
+let NumbersProtocolIpfsGatewayLambda = "https://mjacdgxzla.execute-api.us-east-1.amazonaws.com/default/ipfs-add-with-payment";
 
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
@@ -123,7 +124,7 @@ export async function numbersProtocolIpfsAddBytes(bytes) {
     formData.append('file', fileReadStream);
 
     // Use Numbers Protocol IPFS add API endpoint with Capture Token in header
-    const url = "https://eow75n0xni8ruiy.m.pipedream.net";
+    const url = NumbersProtocolIpfsGatewayLambda;
     const headers = {
       "Authorization": `token ${NumbersProtocolCaptureToken}`,
       ...formData.getHeaders(),
@@ -141,7 +142,7 @@ export async function numbersProtocolIpfsAddBytes(bytes) {
 export async function numbersProtocolIpfsCat(cid) {
   try {
     // Use Numbers Protocol IPFS cat API endpoint with Capture Token
-    const url = `https://eobf91xa1ra7i2n.m.pipedream.net`;
+    const url = NumbersProtocolIpfsGatewayLambda;
     const requestConfig = {
       headers: {
         "Authorization": `token ${NumbersProtocolCaptureToken}`
@@ -161,7 +162,7 @@ export async function numbersProtocolIpfsCat(cid) {
 export async function numbersProtocolIpfsUnpin(cid) {
   try {
     // Use Numbers Protocol IPFS unpin API endpoint with Capture Token
-    const url = `https://eo3wcvdjj73vq4x.m.pipedream.net`;
+    const url = NumbersProtocolIpfsGatewayLambda;
     const requestConfig = {
       headers: {
         "Authorization": `token ${NumbersProtocolCaptureToken}`
