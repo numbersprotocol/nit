@@ -76,6 +76,10 @@ export const nitconfigTemplate = {
     "projectId": "a".repeat(infuraSecretLength),
     "projectSecret": "a".repeat(infuraSecretLength)
   },
+  /* Numbers Protocol IPFS settings */
+  "numbersProtocol": {
+    "captureToken": "" // Capture Token for Numbers Protocol IPFS API
+  },
   "commitDatabase": {
     "updateUrl": "",
     "commitUrl": "",

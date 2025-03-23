@@ -10,7 +10,8 @@ let ProjectId = "";
 let ProjectSecret = "";
 
 let EstuaryInstance;
-let NumbersProtocolInstance;
+let NumbersProtocolCaptureToken = ""; // Store the Capture Token
+let NumbersProtocolIpfsGatewayLambda = "https://mjacdgxzla.execute-api.us-east-1.amazonaws.com/default/ipfs-add-with-payment";
 
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
@@ -110,25 +111,69 @@ export async function estuaryAdd(bytes) {
   }
 }
 
-export async function initNumbersProtocol(apiKey) {
-  NumbersProtocolInstance = new Estuary(apiKey);
+// Update this function to accept and store the Capture Token
+export async function initNumbersProtocol(captureToken) {
+  NumbersProtocolCaptureToken = captureToken;
 }
 
 export async function numbersProtocolIpfsAddBytes(bytes) {
-  let cid;
   try {
-    cid = await NumbersProtocolInstance.addFromBuffer(bytes);
-    return cid;
+    // Create form data with the file
+    const fileReadStream = stream.Readable.from(bytes);
+    const formData = new FormData();
+    formData.append('file', fileReadStream);
+
+    // Use Numbers Protocol IPFS add API endpoint with Capture Token in header
+    const url = NumbersProtocolIpfsGatewayLambda;
+    const headers = {
+      "Authorization": `token ${NumbersProtocolCaptureToken}`,
+      ...formData.getHeaders(),
+    };
+    
+    const httpResponse = await http.post(url, formData, headers);
+    const assetCid = httpResponse.data.cid;
+    return assetCid;
   } catch(error) {
-    console.error(error);
+    console.error("Error adding to Numbers Protocol IPFS:", error);
+    throw error;
   }
 }
 
 export async function numbersProtocolIpfsCat(cid) {
-  const url = `https://${cid}.ipfs.numbersprotocol.io`;
-  const requestConfig = {
-    timeout: { request: 30000 },
+  try {
+    // Use Numbers Protocol IPFS cat API endpoint with Capture Token
+    const url = NumbersProtocolIpfsGatewayLambda;
+    const requestConfig = {
+      headers: {
+        "Authorization": `token ${NumbersProtocolCaptureToken}`
+      },
+      timeout: { request: 30000 },
+    };
+    
+    const r = await got.get(url, requestConfig);
+    return r.rawBody;
+  } catch(error) {
+    console.error(`Failed to download content of CID ${cid} from Numbers Protocol IPFS:`, error);
+    throw error;
   }
-  const r = await got.get(url, requestConfig);
-  return r.rawBody;
+}
+
+// Add new function to unpin content from Numbers Protocol IPFS with Capture Token
+export async function numbersProtocolIpfsUnpin(cid) {
+  try {
+    // Use Numbers Protocol IPFS unpin API endpoint with Capture Token
+    const url = NumbersProtocolIpfsGatewayLambda;
+    const requestConfig = {
+      headers: {
+        "Authorization": `token ${NumbersProtocolCaptureToken}`
+      },
+      timeout: { request: 30000 },
+    };
+    
+    const r = await got.delete(url, requestConfig);
+    return r.statusCode === 200;
+  } catch(error) {
+    console.error(`Failed to unpin CID ${cid} from Numbers Protocol IPFS:`, error);
+    return false;
+  }
 }
