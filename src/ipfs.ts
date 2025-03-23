@@ -10,6 +10,7 @@ let ProjectId = "";
 let ProjectSecret = "";
 
 let EstuaryInstance;
+let NumbersProtocolInstance;
 
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
@@ -67,11 +68,11 @@ export async function w3sIpfsCat(cid) {
 }
 
 export async function ipfsAddBytes(bytes) {
-  return await infuraIpfsAddBytes(bytes);
+  return await numbersProtocolIpfsAddBytes(bytes);
 }
 
 export async function ipfsCat(cid) {
-  return await w3sIpfsCat(cid);
+  return await numbersProtocolIpfsCat(cid);
 }
 
 export async function cidToJsonString(cid) {
@@ -107,4 +108,27 @@ export async function estuaryAdd(bytes) {
   } catch(error) {
     console.error(error);
   }
+}
+
+export async function initNumbersProtocol(apiKey) {
+  NumbersProtocolInstance = new Estuary(apiKey);
+}
+
+export async function numbersProtocolIpfsAddBytes(bytes) {
+  let cid;
+  try {
+    cid = await NumbersProtocolInstance.addFromBuffer(bytes);
+    return cid;
+  } catch(error) {
+    console.error(error);
+  }
+}
+
+export async function numbersProtocolIpfsCat(cid) {
+  const url = `https://${cid}.ipfs.numbersprotocol.io`;
+  const requestConfig = {
+    timeout: { request: 30000 },
+  }
+  const r = await got.get(url, requestConfig);
+  return r.rawBody;
 }
