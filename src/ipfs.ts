@@ -12,6 +12,7 @@ let ProjectSecret = "";
 let EstuaryInstance;
 let NumbersProtocolCaptureToken = ""; // Store the Capture Token
 let NumbersProtocolIpfsGatewayLambda = "https://mjacdgxzla.execute-api.us-east-1.amazonaws.com/default/ipfs-add-with-payment";
+let NumbersProtocolIpfsGateway = "https://ipfs-pin.numbersprotocol.io/ipfs";
 
 export async function initInfura(projectId, projectSecret) {
   ProjectId = projectId;
@@ -142,7 +143,7 @@ export async function numbersProtocolIpfsAddBytes(bytes) {
 export async function numbersProtocolIpfsCat(cid) {
   try {
     // Use Numbers Protocol IPFS cat API endpoint with Capture Token
-    const url = NumbersProtocolIpfsGatewayLambda;
+    const url = `${NumbersProtocolIpfsGateway}/${cid}`;
     const requestConfig = {
       headers: {
         "Authorization": `token ${NumbersProtocolCaptureToken}`
